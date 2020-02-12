@@ -9,13 +9,16 @@ from django.contrib import messages
 def register(request):
     ''' Used to register users'''
 
+    if request.user.is_authenticated:
+        return redirect('chat:home')
+
     if request.method == 'POST':
-        form = UserCreationForm(request, data=request.POST)
-        if form.is_valid:
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
             user = form.save()
             username = form.cleaned_data.get('username')
             messages.success(request, f'New user created: {username}')
-            return redirect()
+            return redirect('chat:home')
         else:
             for msg in form.error_messages:
                 messages.error(request, f'{msg}')
@@ -27,15 +30,18 @@ def register(request):
 def login_user(request):
     ''' Used to log users in '''
 
+    if request.user.is_authenticated:
+        return redirect('chat:home')
+
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid:
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect()
+                return redirect('chat:home')
             else:
                 messages.error(request, 'Invalid username or password')
         else:
@@ -49,7 +55,7 @@ def logout_user(request):
     ''' Used to log users out'''
 
     logout(request)
-    return redirect()
+    return redirect('login')
     
 
 
