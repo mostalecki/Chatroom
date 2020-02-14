@@ -31,7 +31,7 @@ def login_user(request):
     ''' Used to log users in '''
 
     if request.user.is_authenticated:
-        return redirect('chat:home')
+        return redirect('home')
 
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
@@ -41,7 +41,7 @@ def login_user(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('chat:home')
+                return redirect('home')
             else:
                 messages.error(request, 'Invalid username or password')
         else:
