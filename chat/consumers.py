@@ -1,4 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from .models import Room, Connection
 import json
 import hashlib
 
@@ -21,10 +23,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        await self.connect_to_room(self.room_name, self.channel_name)
+
         await self.accept()
 
     async def disconnect(self, close_code):
         # Leave room group
+        await self.remove_connection(self.room_name)
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -40,7 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if user.is_authenticated:
             username = user.username
         else:
-            username = f"{str(user)}{self.scope['session']['id']}"
+            username = f"{str(user)}#{self.scope['session']['id']}"
 
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -69,3 +74,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'user': event['user'],
                 'message': message
             }))
+
+    @database_sync_to_async
+    def connect_to_room(self, room_name, channel_name):
+        room, created = Room.objects.get_or_create(name=self.room_name)
+        connection = Connection(room=room, channel_name=self.channel_name)
+        connection.save()
+
+    @database_sync_to_async
+    def remove_connection(self, room_name):
+        Connection.objects.get(channel_name=self.channel_name).delete()
+        self.remove_room_if_empty(room_name)
+
+    def remove_room_if_empty(self, room_name):
+        room = Room.objects.get(name=room_name)
+        if Connection.objects.filter(room=room).count() == 0:
+            room.delete()
