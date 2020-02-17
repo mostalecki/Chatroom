@@ -4,7 +4,7 @@
 {% if rooms %}
     <p>Join room:<br>
     {% for room in rooms %}
-        {{room.name}}: <a href='{{room.name}}'>Join</a>
+        {{room.name}} ({{room.num_of_connections}} users): <a href='{{room.name}}'>Join</a>
     {% endfor %}
 {% endif %}
 <br>

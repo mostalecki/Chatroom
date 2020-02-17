@@ -7,6 +7,8 @@
 
     <script>
     var roomName = "{{ room_name|escapejs }}";
+    var username = "{{ user.username }}";
+    var isAuthenticated = "{{ user.is_authenticated }}";
 
     var chatSocket = new WebSocket(
         'ws://' + window.location.host +
@@ -16,7 +18,12 @@
         var data = JSON.parse(e.data);
         var message = data['message'];
         if (data['type'] == "message"){
-            document.querySelector('#chat-log').value += (data['user'] + ': ' + message + '\n');
+            if (isAuthenticated && username == data['user']){
+                document.querySelector('#chat-log').value += (message + '\n');
+            }
+            else{
+                document.querySelector('#chat-log').value += (data['user'] + ': ' + message + '\n');
+            }
         }
         else{
             document.querySelector('#chat-log').value += (message + '\n');
