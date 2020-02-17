@@ -23,7 +23,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
-        await self.connect_to_room(self.room_name, self.channel_name)
+        await self.connect_to_room(self.room_name, self.channel_name, self.username)
 
         await self.accept()
 
@@ -41,19 +41,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json['message']
 
         # Send message to room group
-        user = self.scope['user']
-        if user.is_authenticated:
-            username = user.username
-        else:
-            username = f"{str(user)}#{self.scope['session']['id']}"
-
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
                 'sender_channel': self.channel_name,
-                'user': username
+                'user': self.username
             }
         )
 
@@ -76,9 +70,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
 
     @database_sync_to_async
-    def connect_to_room(self, room_name, channel_name):
+    def connect_to_room(self, room_name, channel_name, username):
         room, created = Room.objects.get_or_create(name=self.room_name)
-        connection = Connection(room=room, channel_name=self.channel_name)
+        connection = Connection(room=room, channel_name=self.channel_name, username=username)
         connection.save()
 
     @database_sync_to_async
@@ -90,3 +84,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room = Room.objects.get(name=room_name)
         if Connection.objects.filter(room=room).count() == 0:
             room.delete()
+
+    @property
+    def username(self):
+        user = self.scope['user']
+        if user.is_authenticated:
+            return user.username
+        else:
+            return f"{str(user)}#{self.scope['session']['id']}"
