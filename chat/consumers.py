@@ -5,7 +5,10 @@ import json
 import hashlib
 
 class ChatConsumer(AsyncWebsocketConsumer):
+
     async def connect(self):
+        ''' Create new websocket connection, connect to the group and assign id if user is anonymus '''
+        
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
 
@@ -35,8 +38,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
-    # Receive message from WebSocket
     async def receive(self, text_data):
+        ''' Receive messsage from websocket and forward it to the group '''
+
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
@@ -51,12 +55,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    # Receive message from room group
     async def chat_message(self, event):
-        message = event['message']
+        ''' Receive message from room group, then send to websocket with information wheter it's sender's message '''
 
+        message = event['message']
         # Send message to WebSocket
-        # type depends on wheter it's your message or it's from other channel
+        # type depends on wheter it's from this particular channel (then it's message_confirmation)
+        # or if it's from other channel (message)
         if self.channel_name == event['sender_channel']:
             await self.send(text_data=json.dumps({
                 'type': 'message_confirmation',
@@ -71,22 +76,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def connect_to_room(self, room_name, channel_name, username):
+        ''' Creates/gets new instance of Room object and creates new Connection with reference to it'''
+
         room, created = Room.objects.get_or_create(name=self.room_name)
         connection = Connection(room=room, channel_name=self.channel_name, username=username)
         connection.save()
 
     @database_sync_to_async
     def remove_connection(self, room_name):
-        Connection.objects.get(channel_name=self.channel_name).delete()
-        self.remove_room_if_empty(room_name)
+        ''' Removes connection to room, removes room if empty '''
 
-    def remove_room_if_empty(self, room_name):
+        Connection.objects.get(channel_name=self.channel_name).delete()
         room = Room.objects.get(name=room_name)
-        if Connection.objects.filter(room=room).count() == 0:
+        if room.is_empty:
             room.delete()
 
     @property
     def username(self):
+        ''' Return authenticated user username, or anonymous user username with id stored in session '''
+
         user = self.scope['user']
         if user.is_authenticated:
             return user.username
