@@ -25,12 +25,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-
         await self.connect_to_room(self.room_name, self.channel_name, self.username)
 
+        # Broadcast join message to group
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'join_message',
+                'user': self.username
+            })
         await self.accept()
 
     async def disconnect(self, close_code):
+        ''' Disconnects websocket and removes it from the group '''
+
+        # Send leave message
+        # Is only sent if leaving user is anonymous, or it is user's last instance in this room
+        user = self.scope['user']
+        if user.is_anonymous or self.is_connection_unique:
+            await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'leave_message',
+                'user': self.username
+            })
+            
         # Leave room group
         await self.remove_connection(self.room_name)
         await self.channel_layer.group_discard(
@@ -56,7 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_message(self, event):
-        ''' Receive message from room group, then send to websocket with information wheter it's sender's message '''
+        ''' Receives message from room group, then forwards to websocket '''
 
         message = event['message']
         # Send message to WebSocket
@@ -72,6 +91,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'type': 'message',
                 'user': event['user'],
                 'message': message
+            }))
+
+    async def leave_message(self, event):
+        ''' Receives user leaving notification from group and forwards it to websocket '''
+        
+        await self.send(text_data=json.dumps({
+                'type': 'leave_message',
+                'user': event['user'],
+            }))
+
+    async def join_message(self, event):
+        ''' '''
+
+        await self.send(text_data=json.dumps({
+                'type': 'join_message',
+                'user': event['user'],
             }))
 
     @database_sync_to_async
@@ -92,8 +127,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room.delete()
 
     @property
+    @database_sync_to_async
+    def is_connection_unique(self):
+        return Connection.objects.get(channel_name=self.channel_name).is_unique
+
+    @property
     def username(self):
-        ''' Return authenticated user username, or anonymous user username with id stored in session '''
+        ''' Return authenticated user's username, or anonymous user's username with id stored in session '''
 
         user = self.scope['user']
         if user.is_authenticated:

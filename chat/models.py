@@ -7,6 +7,13 @@ class Connection(models.Model):
     channel_name = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
 
+    @property
+    def is_unique(self):
+        ''' Checks if it is user's only connection to this room '''
+        if Connection.objects.filter(room=self.room, username=self.username).count() == 1:
+            return True
+        return False
+
 class Room(models.Model):
     name = models.CharField(max_length=128)
     is_private = models.BooleanField(default=False)

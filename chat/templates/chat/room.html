@@ -16,17 +16,22 @@
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        var message = data['message'];
         if (data['type'] == "message"){
             if (isAuthenticated && username == data['user']){
-                document.querySelector('#chat-log').value += (message + '\n');
+                document.querySelector('#chat-log').value += (data['message'] + '\n');
             }
             else{
-                document.querySelector('#chat-log').value += (data['user'] + ': ' + message + '\n');
+                document.querySelector('#chat-log').value += (data['user'] + ': ' + data['message'] + '\n');
             }
         }
-        else{
-            document.querySelector('#chat-log').value += (message + '\n');
+        else if (data["type"] == "message_confirmation"){
+            document.querySelector('#chat-log').value += (data['message'] + '\n');
+        }
+        else if (data["type"] == "leave_message"){
+            document.querySelector('#chat-log').value += (data['user'] + " has left." + '\n');
+        }
+        else if (data["type"] == "join_message"){
+            document.querySelector('#chat-log').value += (data['user'] + " joined." + '\n');
         }
     };
 
