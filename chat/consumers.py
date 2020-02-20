@@ -102,7 +102,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
 
     async def join_message(self, event):
-        ''' '''
+        ''' Receives user join notification from group and forwards it to websocket '''
 
         await self.send(text_data=json.dumps({
                 'type': 'join_message',
@@ -129,6 +129,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @property
     @database_sync_to_async
     def is_connection_unique(self):
+        ''' Helper method for accessing Connection.is_unique from async piece of code'''
         return Connection.objects.get(channel_name=self.channel_name).is_unique
 
     @property

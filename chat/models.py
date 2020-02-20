@@ -3,6 +3,8 @@ from django.db import models
 # Create your models here.
 
 class Connection(models.Model):
+    ''' Stores information about websocket connected to a Room instance '''
+
     room = models.ForeignKey('Room', on_delete=models.CASCADE)
     channel_name = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
@@ -15,7 +17,9 @@ class Connection(models.Model):
         return False
 
 class Room(models.Model):
-    name = models.CharField(max_length=128)
+    ''' Used to keep track of websocket connections in the same group '''
+
+    name = models.CharField(max_length=128, unique=True)
     is_private = models.BooleanField(default=False)
     
     @property
