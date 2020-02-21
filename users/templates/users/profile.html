@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {{username}}
+    <img src="{% static avatar_url %}" alt="avatar">
+    {% if form %}
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.id }}
+            {{ form }}
+            <input type="submit" value="Change avatar"/>
+        </form>
+    {% endif %}
+{% endblock %}

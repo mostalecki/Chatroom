@@ -22,5 +22,6 @@ urlpatterns = [
     path('register/', user_views.register, name="register"),
     path('login/', user_views.login_user, name="login"),
     path('logout/', user_views.logout_user, name="logout"),
+    path('profile/<str:username>/', user_views.user_profile, name='profile'),
     path('', include('chat.urls'))
 ]

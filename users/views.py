@@ -1,9 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
-from .forms import UserCreationForm
+from django.core.files.storage import default_storage
+from .forms import UserCreationForm, UserProfileForm
+from .models import UserProfile
 
 # Create your views here.
 
@@ -11,7 +13,7 @@ def register(request):
     ''' Used to register users'''
 
     if request.user.is_authenticated:
-        return redirect('chat:home')
+        return redirect('home')
 
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -19,7 +21,7 @@ def register(request):
             user = form.save()
             username = form.cleaned_data.get('username')
             messages.success(request, f'New user created: {username}')
-            return redirect('chat:home')
+            return redirect('home')
         else:
             for msg in form.error_messages:
                 messages.error(request, f'{msg}')
@@ -57,6 +59,32 @@ def logout_user(request):
 
     logout(request)
     return redirect('login')
+
+def user_profile(request, username):
+    ''' '''
+    profile = get_object_or_404(UserProfile, user__username=username)
+
+    context = {}
+
+    if request.user.is_authenticated:
+        user = request.user
+        if user.username == username:
+            if request.method == "POST":
+                form = UserProfileForm(request.POST, request.FILES, instance=profile)
+                if form.is_valid():
+                    form.save()
+                    # TODO: move file saving to a separate method
+                    avatar = request.FILES['avatar']
+                    with open(f'static/{profile.avatar}', 'wb+') as destination:
+                        for chunk in avatar.chunks():
+                            destination.write(chunk)
+
+            form = UserProfileForm()
+            context['form'] = form
+
+    context['username'] = profile.user.username
+    context['avatar_url'] = profile.avatar.url
     
+    return render(request, 'users/profile.html', context)
 
 
