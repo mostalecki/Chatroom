@@ -16,6 +16,7 @@ class Connection(models.Model):
             return True
         return False
 
+
 class Room(models.Model):
     ''' Used to keep track of websocket connections in the same group '''
 
