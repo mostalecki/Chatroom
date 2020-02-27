@@ -33,6 +33,9 @@
         else if (data["type"] == "join_message"){
             document.querySelector('#chat-log').value += (data['user'] + " joined." + '\n');
         }
+        else if (data["type"] == "user_list"){
+            console.log(data['users'])
+        }
     };
 
     chatSocket.onclose = function(e) {

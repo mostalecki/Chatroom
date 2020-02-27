@@ -15,7 +15,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Assign user an id, if anonymous, and store it in session
         # id is first 4 digits of md5 hash of channel name
         user = self.scope['user']
-        if user.is_authenticated is False:
+        if user.is_anonymous:
             id = hashlib.md5()
             id.update(self.channel_name.split('.')[1].encode('utf-8'))
             self.scope['session']['id'] = str(int(id.hexdigest(),16))[0:4]
@@ -25,7 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        self.room, self.connection = await self.connect_to_room(self.room_name, self.channel_name, self.username)
+        self.room, self.connection = await self.connect_to_room(self.room_name, self.channel_name, self.username, user.is_authenticated)
 
         # Broadcast join message to group
         await self.channel_layer.group_send(
@@ -35,6 +35,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'user': self.username
             })
         await self.accept()
+
+        # Send websocket list of users currently in room
+        await self.send(text_data=json.dumps({
+                'type': 'user_list',
+                'users': await self.user_list
+            }))
 
     async def disconnect(self, close_code):
         ''' Disconnects websocket and removes it from the group '''
@@ -110,11 +116,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
 
     @database_sync_to_async
-    def connect_to_room(self, room_name, channel_name, username):
+    def connect_to_room(self, room_name, channel_name, username, is_authenticated):
         ''' Creates/gets new instance of Room object and creates new Connection with reference to it'''
 
         room, created = Room.objects.get_or_create(name=self.room_name)
-        connection = Connection(room=room, channel_name=self.channel_name, username=username)
+        connection = Connection(room=room, channel_name=self.channel_name, username=username, is_user_authenticated=is_authenticated)
         connection.save()
 
         return room, connection
@@ -133,6 +139,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         ''' Helper method for accessing Connection.is_unique from async piece of code'''
         
         return self.connection.is_unique
+
+    @property
+    @database_sync_to_async
+    def user_list(self):
+        ''' List of users currently in this room '''
+        
+        return list(self.room.user_list)
 
     @property
     def username(self):

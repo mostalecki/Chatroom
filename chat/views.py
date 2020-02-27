@@ -19,6 +19,7 @@ def homepage(request):
                 name = form.cleaned_data['name']
                 return redirect(reverse('room', kwargs={'room_name':name}))
 
+            # Occurs when room with that name already exists in database
             except IntegrityError:
                 messages.error(request, f"Room named {form.cleaned_data.get('name')} already exists")
      
