@@ -25,7 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        await self.connect_to_room(self.room_name, self.channel_name, self.username)
+        self.room, self.connection = await self.connect_to_room(self.room_name, self.channel_name, self.username)
 
         # Broadcast join message to group
         await self.channel_layer.group_send(
@@ -117,20 +117,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         connection = Connection(room=room, channel_name=self.channel_name, username=username)
         connection.save()
 
+        return room, connection
+
     @database_sync_to_async
     def remove_connection(self, room_name):
         ''' Removes connection to room, removes room if empty '''
 
-        Connection.objects.get(channel_name=self.channel_name).delete()
-        room = Room.objects.get(name=room_name)
-        if room.is_empty:
-            room.delete()
+        self.connection.delete()
+        if self.room.is_empty:
+            self.room.delete()
 
     @property
     @database_sync_to_async
     def is_connection_unique(self):
         ''' Helper method for accessing Connection.is_unique from async piece of code'''
-        return Connection.objects.get(channel_name=self.channel_name).is_unique
+        
+        return self.connection.is_unique
 
     @property
     def username(self):
