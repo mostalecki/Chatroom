@@ -24,6 +24,7 @@ main{
     margin:0 auto;
     color: lightslategrey;
     font-size: small;
+    width: 100%;
 }
 
 .owner-message{
