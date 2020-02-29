@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import IntegrityError
-from .models import Room, Connection
+from .models import Room
 from .forms import RoomForm
 
 # Create your views here.

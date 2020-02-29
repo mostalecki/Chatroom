@@ -1,7 +1,9 @@
 import json
 import hashlib
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+
 from .models import Room, Connection
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -13,13 +15,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
 
-        # Assign user an id, if anonymous, and store it in session
+        # Assign user an id if anonymous
         # id is first 4 digits of md5 hash of channel name
         user = self.scope['user']
         if user.is_anonymous:
             id = hashlib.md5()
             id.update(self.channel_name.split('.')[1].encode('utf-8'))
-            self.scope['session']['id'] = str(int(id.hexdigest(),16))[0:4]
+            self.username = f"{str(user)}#{id}"
+        else:
+            self.username = user.username
 
         # Join room group
         await self.channel_layer.group_add(
@@ -154,13 +158,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
         ''' List of users currently in this room '''
         
         return list(self.room.user_list)
-
-    @property
-    def username(self):
-        ''' Return authenticated user's username, or anonymous user's username with id stored in session '''
-
-        user = self.scope['user']
-        if user.is_authenticated:
-            return user.username
-        else:
-            return f"{str(user)}#{self.scope['session']['id']}"
