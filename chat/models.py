@@ -37,6 +37,7 @@ class Room(models.Model):
     
     @property
     def num_of_connections(self):
+        ''' Returns amount of connections unique per username '''
         return Connection.objects.filter(room=self).values('username').distinct().count()
 
     @property
