@@ -2,3 +2,19 @@ body{
     text-align: center;
     background-color:cornflowerblue;
 }
+
+main{
+    width: 70%;
+    margin: 0 auto;
+    margin-left: 8%;
+}
+
+#user-list{
+    border: 1px solid black;
+}
+
+#chat-box{
+    border: 1px solid black;
+    overflow-y: auto;
+    height:500px;
+}

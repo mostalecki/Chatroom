@@ -22,7 +22,7 @@ class Connection(models.Model):
         return False
 
     def save(self, *args, **kwargs):
-        ''' If user is authenticated, fetch avatar's url from their UserProfile'''
+        ''' If user is authenticated, fetch his avatar's url from his UserProfile'''
         if self.is_user_authenticated:
             self.user_avatar_url = UserProfile.objects.get(user__username=self.username).avatar
         super(Connection, self).save(*args, **kwargs)

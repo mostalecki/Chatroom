@@ -1,11 +1,34 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
     <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br/>
     <input id="chat-message-input" type="text" size="100"/><br/>
     <input id="chat-message-submit" type="button" value="Send"/>
 
+    <div class="container">
+        <div class="row">
+            <div class="col" id="user-list">
+            </div>
+            <div class="col-9" id="chat-box">
+            </div>
+        </div>
+    </div>
+
     <script>
+    class User {
+        constructor(username, avatar_url){
+            this.username=username;
+            this.avatar = new Image();
+            var src = "http://"+window.location.host + "/static/" + avatar_url
+            this.avatar.src = src;
+            this.avatar.width = 30;
+            this.avatar.height = 30;
+        }
+    }
+
+    var users = []
+
     var roomName = "{{ room_name|escapejs }}";
     var username = "{{ user.username }}";
     var isAuthenticated = "{{ user.is_authenticated }}";
@@ -34,7 +57,12 @@
             document.querySelector('#chat-log').value += (data['user'] + " joined." + '\n');
         }
         else if (data["type"] == "user_list"){
-            console.log(data['users'])
+            userListDiv = document.getElementById("user-list");
+            for(var i = 0; i < data['users'].length; i++){
+                users.push(new User(data['users'][i]['username'], data['users'][i]['user_avatar_url']))
+                userListDiv.appendChild(users[i].avatar);
+                userListDiv.innerHTML += users[i].username+"</br>";
+            }
         }
     };
 
