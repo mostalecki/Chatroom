@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block content %}
-    <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br/>
+    <!--<textarea id="chat-log" cols="100" rows="20" readonly></textarea><br/>
     <input id="chat-message-input" type="text" size="100"/><br/>
-    <input id="chat-message-submit" type="button" value="Send"/>
+    <input id="chat-message-submit" type="button" value="Send"/>-->
 
     <div class="container">
         <div class="row">
@@ -14,6 +14,8 @@
             </div>
         </div>
     </div>
+    <input id="chat-message-input" type="text" size="100"/>
+    <input id="chat-message-submit" type="button" value="Send"/>
 
     <script>
     class User {
@@ -41,27 +43,88 @@
         var data = JSON.parse(e.data);
         if (data['type'] == "message"){
             if (isAuthenticated && username == data['user']){
-                document.querySelector('#chat-log').value += (data['message'] + '\n');
+                //document.querySelector('#chat-log').value += (data['message'] + '\n');
+
+                var msgDiv = document.createElement('div')
+                msgDiv.className = "owner-message"
+                msgDiv.innerHTML += data['message'];
+                document.getElementById('chat-box').appendChild(msgDiv);
+                document.getElementById('chat-box').innerHTML += '</br>';
             }
             else{
-                document.querySelector('#chat-log').value += (data['user'] + ': ' + data['message'] + '\n');
+                //document.querySelector('#chat-log').value += (data['user'] + ': ' + data['message'] + '\n');
+
+                var msgDiv = document.createElement('div')
+                msgDiv.className = "message"
+                msgDiv.innerHTML += data['user'] + ': ' + data['message'];
+                document.getElementById('chat-box').appendChild(msgDiv);
+                document.getElementById('chat-box').innerHTML += '</br>';
             }
         }
         else if (data["type"] == "message_confirmation"){
-            document.querySelector('#chat-log').value += (data['message'] + '\n');
+            //document.querySelector('#chat-log').value += (data['message'] + '\n');
+
+            var msgDiv = document.createElement('div')
+            msgDiv.className = "owner-message"
+            msgDiv.innerHTML += data['message'];
+            document.getElementById('chat-box').appendChild(msgDiv);
+            document.getElementById('chat-box').innerHTML += '</br>';
         }
         else if (data["type"] == "leave_message"){
-            document.querySelector('#chat-log').value += (data['user'] + " has left." + '\n');
+            //document.querySelector('#chat-log').value += (data['user'] + " has left." + '\n');
+
+            var msgDiv = document.createElement('div')
+            msgDiv.className = "notification"
+            msgDiv.innerHTML += data['username'] + " has left.";
+            document.getElementById('chat-box').appendChild(msgDiv);
+            document.getElementById('chat-box').innerHTML += '</br>';
+
+            var userDiv = document.getElementById(data['username']);
+            userDiv.remove()
+
+            users = users.filter(function(obj) {
+                return obj.username !== data['username'];
+            })
+
+            
         }
         else if (data["type"] == "join_message"){
-            document.querySelector('#chat-log').value += (data['user'] + " joined." + '\n');
+            //document.querySelector('#chat-log').value += (data['user'] + " joined." + '\n');
+
+            var msgDiv = document.createElement('div')
+            msgDiv.className = "notification";
+            msgDiv.innerHTML += data['username'] + " joined.";
+            document.getElementById('chat-box').appendChild(msgDiv);
+            document.getElementById('chat-box').innerHTML += '</br>';
+
+            if (!users.find(x => x.username == data['username'])){
+                var newUser = new User(data['username'], data['user_avatar_url'])
+                //userListDiv.appendChild(newUser.avatar);
+                //userListDiv.innerHTML += newUser.username+"</br>";
+
+                var userDiv = document.createElement('div')
+                userDiv.appendChild(newUser.avatar);
+                userDiv.innerHTML += newUser.username;
+                userDiv.id = newUser.username;
+                userDiv.className = "user";
+                userListDiv.appendChild(userDiv);
+            }
+            
+            
         }
         else if (data["type"] == "user_list"){
             userListDiv = document.getElementById("user-list");
             for(var i = 0; i < data['users'].length; i++){
                 users.push(new User(data['users'][i]['username'], data['users'][i]['user_avatar_url']))
-                userListDiv.appendChild(users[i].avatar);
-                userListDiv.innerHTML += users[i].username+"</br>";
+                //userListDiv.appendChild(users[i].avatar);
+                //userListDiv.innerHTML += users[i].username+"</br>";
+
+                var userDiv = document.createElement('div')
+                userDiv.appendChild(users[i].avatar);
+                userDiv.innerHTML += users[i].username;
+                userDiv.className = "user";
+                userDiv.id = users[i].username;
+                userListDiv.appendChild(userDiv);
             }
         }
     };

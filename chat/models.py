@@ -24,7 +24,7 @@ class Connection(models.Model):
     def save(self, *args, **kwargs):
         ''' If user is authenticated, fetch his avatar's url from his UserProfile'''
         if self.is_user_authenticated:
-            self.user_avatar_url = UserProfile.objects.get(user__username=self.username).avatar
+            self.user_avatar_url = UserProfile.objects.get(user__username=self.username).avatar.url
         super(Connection, self).save(*args, **kwargs)
 
 
@@ -41,7 +41,7 @@ class Room(models.Model):
 
     @property
     def user_list(self):
-        return Connection.objects.filter(room=self).values('is_user_authenticated', 'username', 'user_avatar_url').distinct('username')
+        return Connection.objects.filter(room=self).distinct('username').values('is_user_authenticated', 'username', 'user_avatar_url')
 
     @property
     def is_empty(self):
