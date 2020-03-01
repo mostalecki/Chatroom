@@ -71,13 +71,12 @@ def user_profile(request, username):
         if user.username == username:
             if request.method == "POST":
                 form = UserProfileForm(request.POST, request.FILES, instance=profile)
-                if form.is_valid():
-                    form.save()
-                    # TODO: move file saving to a separate method
-                    avatar = request.FILES['avatar']
-                    with open(f'static/{profile.avatar}', 'wb+') as destination:
-                        for chunk in avatar.chunks():
-                            destination.write(chunk)
+                # avatar images are written to drive here because 
+                # for some reason django does not want to save them
+                avatar = request.FILES['avatar']
+                with open(f'static/{profile.avatar}', 'wb+') as destination:
+                    for chunk in avatar.chunks():
+                        destination.write(chunk)
 
             form = UserProfileForm()
             context['form'] = form

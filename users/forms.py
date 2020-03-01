@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import ImageField
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import UserProfile
@@ -22,6 +23,8 @@ class UserCreationForm(UserCreationForm):
         return user
 
 class UserProfileForm(forms.ModelForm):
+    avatar = ImageField(required=True)
+    
     class Meta:
         model = UserProfile
         fields = ['avatar',]
