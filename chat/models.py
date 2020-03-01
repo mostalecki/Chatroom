@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import UserProfile
 
 # Create your models here.
 
@@ -7,7 +8,11 @@ class Connection(models.Model):
 
     room = models.ForeignKey('Room', on_delete=models.CASCADE)
     channel_name = models.CharField(max_length=255)
+    is_user_authenticated = models.BooleanField(default=False)
+
+    # Following fields are used while displaying the message coming from this connection
     username = models.CharField(max_length=255)
+    user_avatar_url = models.CharField(max_length=255, default='avatars/default.png')
 
     @property
     def is_unique(self):
@@ -15,6 +20,13 @@ class Connection(models.Model):
         if Connection.objects.filter(room=self.room, username=self.username).count() == 1:
             return True
         return False
+
+    def save(self, *args, **kwargs):
+        ''' If user is authenticated, fetch his avatar's url from his UserProfile'''
+        if self.is_user_authenticated:
+            self.user_avatar_url = UserProfile.objects.get(user__username=self.username).avatar.url
+        super(Connection, self).save(*args, **kwargs)
+
 
 
 class Room(models.Model):
@@ -25,7 +37,12 @@ class Room(models.Model):
     
     @property
     def num_of_connections(self):
+        ''' Returns amount of connections unique per username '''
         return Connection.objects.filter(room=self).values('username').distinct().count()
+
+    @property
+    def user_list(self):
+        return Connection.objects.filter(room=self).distinct('username').values('is_user_authenticated', 'username', 'user_avatar_url')
 
     @property
     def is_empty(self):

@@ -1,11 +1,31 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-    <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br/>
-    <input id="chat-message-input" type="text" size="100"/><br/>
+    <div class="container">
+        <div class="row">
+            <div class="col" id="user-list">
+            </div>
+            <div class="col-9" id="chat-box">
+            </div>
+        </div>
+    </div>
+    <input id="chat-message-input" type="text" size="100"/>
     <input id="chat-message-submit" type="button" value="Send"/>
 
     <script>
+    class User {
+        constructor(username, avatar_url){
+            this.username=username;
+            this.avatar = new Image();
+            var src = "http://"+window.location.host + "/static/" + avatar_url
+            this.avatar.src = src;
+            this.avatar.width = 30;
+            this.avatar.height = 30;
+        }
+    }
+
+    var users = []
     var roomName = "{{ room_name|escapejs }}";
     var username = "{{ user.username }}";
     var isAuthenticated = "{{ user.is_authenticated }}";
@@ -16,22 +36,26 @@
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        if (data['type'] == "message"){
-            if (isAuthenticated && username == data['user']){
-                document.querySelector('#chat-log').value += (data['message'] + '\n');
-            }
-            else{
-                document.querySelector('#chat-log').value += (data['user'] + ': ' + data['message'] + '\n');
-            }
-        }
-        else if (data["type"] == "message_confirmation"){
-            document.querySelector('#chat-log').value += (data['message'] + '\n');
-        }
-        else if (data["type"] == "leave_message"){
-            document.querySelector('#chat-log').value += (data['user'] + " has left." + '\n');
-        }
-        else if (data["type"] == "join_message"){
-            document.querySelector('#chat-log').value += (data['user'] + " joined." + '\n');
+
+        switch(data['type']){
+            case "message":
+                var isFromSelf = isAuthenticated && username == data['user'];
+                displayMessage(data, isFromSelf=isFromSelf);
+                break;
+            case "message_confirmation":
+                displayMessage(data, isFromSelf=true);
+                break;
+            case "leave_message":
+                onUserLeave(data);
+                break;
+            case "join_message":
+                onUserJoin(data);
+                break;
+            case "user_list":
+                displayUserList(data);
+                break;
+            default:
+                console.log("Unexpected websocket message type");
         }
     };
 
@@ -55,5 +79,63 @@
 
         messageInputDom.value = '';
     };
+
+    function displayMessage(data, isFromSelf){
+        var msgDiv = document.createElement('div')
+        if (isFromSelf){
+            msgDiv.className = "owner-message"
+            msgDiv.innerHTML += data['message'];
+        } else{
+            msgDiv.className = "message"
+            msgDiv.innerHTML += data['user'] + ': ' + data['message'];
+        }
+        document.getElementById('chat-box').appendChild(msgDiv);
+        document.getElementById('chat-box').innerHTML += '</br>';
+    }
+
+    function onUserJoin(data){
+        var msgDiv = document.createElement('div')
+        msgDiv.className = "notification";
+        msgDiv.innerHTML += data['username'] + " joined.";
+        document.getElementById('chat-box').appendChild(msgDiv);
+
+        if (!users.find(x => x.username == data['username'])){
+            var newUser = new User(data['username'], data['user_avatar_url'])
+            var userDiv = document.createElement('div')
+            userDiv.appendChild(newUser.avatar);
+            userDiv.innerHTML += newUser.username;
+            userDiv.id = newUser.username;
+            userDiv.className = "user";
+            userListDiv.appendChild(userDiv);
+        }
+    }
+
+    function onUserLeave(data){
+        var msgDiv = document.createElement('div')
+            msgDiv.className = "notification"
+            msgDiv.innerHTML += data['username'] + " has left.";
+            document.getElementById('chat-box').appendChild(msgDiv);
+
+            var userDiv = document.getElementById(data['username']);
+            userDiv.remove()
+
+            users = users.filter(function(obj) {
+                return obj.username !== data['username'];
+            })
+    }
+
+    function displayUserList(data){
+        userListDiv = document.getElementById("user-list");
+        for(var i = 0; i < data['users'].length; i++){
+            users.push(new User(data['users'][i]['username'], data['users'][i]['user_avatar_url']))
+
+            var userDiv = document.createElement('div')
+            userDiv.appendChild(users[i].avatar);
+            userDiv.innerHTML += users[i].username;
+            userDiv.className = "user";
+            userDiv.id = users[i].username;
+            userListDiv.appendChild(userDiv);
+        }
+    }
 </script>
 {% endblock %}
