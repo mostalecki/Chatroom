@@ -1,5 +1,5 @@
 import json
-import hashlib
+from random import randint
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
@@ -19,9 +19,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # id is first 4 digits of md5 hash of channel name
         user = self.scope['user']
         if user.is_anonymous:
-            id = hashlib.md5()
-            id.update(self.channel_name.split('.')[1].encode('utf-8'))
-            self.username = f"{str(user)}#{id.hexdigest()[:4]}"
+            #id = hashlib.md5()
+            #id.update(self.channel_name.split('.')[1].encode('utf-8'))
+            #self.username = f"{str(user)}#{id.hexdigest()[:4]}"
+            self.username = f"{str(user)}#{randint(1000, 9999)}"
         else:
             self.username = user.username
 
