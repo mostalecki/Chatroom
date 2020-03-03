@@ -21,10 +21,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if user.is_anonymous:
             id = hashlib.md5()
             id.update(self.channel_name.split('.')[1].encode('utf-8'))
-            self.username = f"{str(user)}#{id}"
+            self.username = f"{str(user)}#{id.hexdigest()[:4]}"
         else:
             self.username = user.username
 
+        print(self.username)
         # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
