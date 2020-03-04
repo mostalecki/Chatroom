@@ -15,6 +15,7 @@ def register(request):
     if request.user.is_authenticated:
         return redirect('home')
 
+    form = UserCreationForm()
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -22,11 +23,7 @@ def register(request):
             username = form.cleaned_data.get('username')
             messages.success(request, f'New user created: {username}')
             return redirect('home')
-        else:
-            for msg in form.error_messages:
-                messages.error(request, f'{msg}')
 
-    form = UserCreationForm()
     return render(request, 'users/register.html', {'form':form})
 
 
@@ -74,6 +71,7 @@ def user_profile(request, username):
                 # avatar images are written to drive here because 
                 # for some reason django does not want to save them
                 avatar = request.FILES['avatar']
+                form.save()
                 with open(f'static/{profile.avatar}', 'wb+') as destination:
                     for chunk in avatar.chunks():
                         destination.write(chunk)

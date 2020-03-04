@@ -10,6 +10,7 @@ from .forms import RoomForm
 def homepage(request):
     ''' Main page '''
 
+    form = RoomForm()
     if request.method == 'POST':
         form = RoomForm(request.POST)
         if form.is_valid():
@@ -21,9 +22,10 @@ def homepage(request):
             # Occurs when room with that name already exists in database
             except IntegrityError:
                 messages.error(request, f"Room named {form.cleaned_data.get('name')} already exists")
+        else:
+            print(form.errors)
      
     rooms = Room.objects.filter(is_private=False)
-    form = RoomForm()
     return render(request, 'chat/home.html', {'rooms':rooms, 'form':form})
 
 def room(request, room_name):
