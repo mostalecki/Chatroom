@@ -129,6 +129,13 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# IDE stuff
 .vscode
+.idea
 
-static/avatars
+# Media files
+backend/static/avatars
+
+# Env files
+.env.dev
+.env.prod
