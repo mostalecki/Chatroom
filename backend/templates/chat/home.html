@@ -1,0 +1,47 @@
+{% extends '../base.html' %}
+
+{% block content %}
+{% if rooms %}
+    <p>Join room:<br>
+    {% for room in rooms %}
+        {{room.name}} ({{room.num_of_connections}} users): <a href='{{room.name}}'>Join</a>
+    {% endfor %}
+{% else%}
+    <p>No active rooms currently<br>
+{% endif %}
+<br>
+Create room<br/>
+    {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Create"/>
+    </form>
+
+    <script>
+        document.querySelector('#room-name-input').focus();
+        document.querySelector('#room-name-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#room-name-submit').click();
+            }
+        };
+
+        document.querySelector('#room-name-submit').onclick = function(e) {
+            var roomName = document.querySelector('#room-name-input').value;
+            window.location.pathname = '/' + roomName + '/';
+        };
+    </script>
+{% endblock %}
