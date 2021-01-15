@@ -134,7 +134,7 @@ dmypy.json
 .idea
 
 # Media files
-backend/static/avatars
+backend/src/media/avatars
 
 # Env files
 .env.dev
