@@ -4,8 +4,8 @@ services:
     build:
       context: ./backend
     volumes:
-    - django_static:/app/static
-    - django_media:/app/media
+    - django_static:/app/src/static
+    - django_media:/app/src/media
     depends_on:
       - db
 
