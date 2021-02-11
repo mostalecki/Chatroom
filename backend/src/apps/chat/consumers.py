@@ -45,7 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-        # Send back list of users currently in room
+        # Send back list of profile currently in room
         await self.send(
             text_data=json.dumps({"type": "user_list", "users": await self.user_list})
         )

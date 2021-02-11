@@ -1,10 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
-
-# Create your models here.
+from src.apps.authentication.models import User
 
 
-class UserProfile(models.Model):
+class Profile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     avatar = models.ImageField(upload_to="avatars/", default="avatars/default.png")
