@@ -1,5 +1,5 @@
 from django.db import models
-from src.apps.users.models import UserProfile
+from src.apps.profile.models import Profile
 
 # Create your models here.
 
