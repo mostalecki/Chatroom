@@ -1,3 +1,4 @@
+# Source: https://github.com/HackSoftware/Django-Styleguide
 from django.core.exceptions import ValidationError
 
 from rest_framework import exceptions as rest_exceptions

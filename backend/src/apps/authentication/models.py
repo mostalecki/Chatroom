@@ -4,6 +4,9 @@ from django.contrib.auth.models import (
     BaseUserManager,
 )
 from django.db import models
+from django.utils import timezone
+
+from rest_framework.authtoken.models import Token
 
 
 class UserManager(BaseUserManager):
@@ -41,3 +44,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["username"]
 
     objects = UserManager()
+
+
+class EmailConfirmationToken(Token):
+    user = models.OneToOneField(User, related_name="email_confirmation_token", on_delete=models.CASCADE)
+
+    @property
+    def is_expired(self) -> bool:
+        return self.created < timezone.now() - timezone.timedelta(days=1)

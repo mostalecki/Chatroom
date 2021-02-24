@@ -1,8 +1,9 @@
 version: "3.8"
 services:
   backend:
-    build:
-      context: ./backend
+    <<: &backend_build
+      build:
+        context: ./backend
     volumes:
     - django_static:/app/src/static
     - django_media:/app/src/media
@@ -17,6 +18,16 @@ services:
   redis:
     image: redis:6.0
     restart: always
+
+  celery-normal-priority:
+    <<: *backend_build
+    build:
+      context: backend
+    container_name: chatroom_normal_celery
+    command: celery -A src worker -l info -Q normal_priority -n normal_priority -c 2
+    depends_on:
+      - db
+      - redis
 
 
 volumes:
