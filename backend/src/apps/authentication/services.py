@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 
 from src.apps.authentication.emails import send_async_email_address_confirmation_email
 from src.apps.authentication.models import User, EmailConfirmationToken
+from src.apps.profile.models import Profile
 from src.celery import QueuePriority
 
 
@@ -18,6 +19,7 @@ def user_register(*, email: str, username: str, password: str) -> User:
     user.save()
 
     email_confirmation_token = EmailConfirmationToken.objects.create(user=user)
+    Profile.objects.create(user=user)
 
     send_async_email_address_confirmation_email.apply_async(
         queue=QueuePriority.NORMAL,
