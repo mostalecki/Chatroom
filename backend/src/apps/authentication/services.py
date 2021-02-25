@@ -1,10 +1,10 @@
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
 
-from src.apps.authentication.models import User, EmailConfirmationToken
 from src.apps.authentication.emails import send_async_email_address_confirmation_email
+from src.apps.authentication.models import User, EmailConfirmationToken
 from src.celery import QueuePriority
 
 
@@ -21,7 +21,7 @@ def user_register(*, email: str, username: str, password: str) -> User:
 
     send_async_email_address_confirmation_email.apply_async(
         queue=QueuePriority.NORMAL,
-        kwargs={"email_confirmation_token": email_confirmation_token.key}
+        kwargs={"email_confirmation_token": email_confirmation_token.key},
     )
 
     return user
@@ -29,7 +29,9 @@ def user_register(*, email: str, username: str, password: str) -> User:
 
 @transaction.atomic
 def user_email_verify(*, token: str) -> None:
-    email_verification_token = get_object_or_404(EmailConfirmationToken.objects.select_related(), key=token)
+    email_verification_token = get_object_or_404(
+        EmailConfirmationToken.objects.select_related(), key=token
+    )
 
     if email_verification_token.is_expired:
         raise ValidationError("Token has expired")
@@ -42,7 +44,9 @@ def user_email_verify(*, token: str) -> None:
 
 
 def user_resend_activation_email(*, email: str) -> None:
-    user = get_object_or_404(User.objects.select_related("email_confirmation_token"), email=email)
+    user = get_object_or_404(
+        User.objects.select_related("email_confirmation_token"), email=email
+    )
 
     if user.email_confirmation_token is not None:
         user.email_confirmation_token.delete()
@@ -50,7 +54,5 @@ def user_resend_activation_email(*, email: str) -> None:
     email_confirmation_token = EmailConfirmationToken.objects.create(user=user)
     send_async_email_address_confirmation_email.apply_async(
         queue=QueuePriority.NORMAL,
-        kwargs={"email_confirmation_token": email_confirmation_token.key}
+        kwargs={"email_confirmation_token": email_confirmation_token.key},
     )
-
-

@@ -47,7 +47,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class EmailConfirmationToken(Token):
-    user = models.OneToOneField(User, related_name="email_confirmation_token", on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User, related_name="email_confirmation_token", on_delete=models.CASCADE
+    )
 
     @property
     def is_expired(self) -> bool:

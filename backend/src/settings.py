@@ -9,6 +9,8 @@ DEBUG = os.environ.get("DJANGO_DEBUG")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(",")
 
+APP_URL = os.environ.get("APP_URL")
+
 INSTALLED_APPS = [
     # django apps
     "django.contrib.admin",
