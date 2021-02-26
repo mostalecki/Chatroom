@@ -9,15 +9,28 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('authentication', '0001_initial'),
+        ("authentication", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='authentication.user')),
-                ('avatar', models.ImageField(default='avatars/default.png', upload_to='avatars/')),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        primary_key=True,
+                        serialize=False,
+                        to="authentication.user",
+                    ),
+                ),
+                (
+                    "avatar",
+                    models.ImageField(
+                        default="avatars/default.png", upload_to="avatars/"
+                    ),
+                ),
             ],
         ),
     ]

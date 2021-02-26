@@ -19,3 +19,7 @@ services:
   db:
     env_file:
       - .env.dev
+
+  celery-normal-priority:
+    env_file:
+      - .env.dev

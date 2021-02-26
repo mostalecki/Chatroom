@@ -1,0 +1,9 @@
+Hello {{ username }},
+Thank you for registering an account on the Chatroom. Please visit the below to confirm your email.
+
+{{ app_url }}/confirm-email?token={{ token }}
+
+This activation link will expire in 1 day. If you did not request an account for Chatroom, please ignore this email.
+
+Best regards,
+Chatroom
