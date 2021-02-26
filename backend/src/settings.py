@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     # third party apps
     "channels",
     "rest_framework",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
