@@ -29,6 +29,16 @@ services:
       - db
       - redis
 
+  nginx:
+    build: ./nginx
+    ports:
+    - 80:80
+    depends_on:
+      - backend
+    volumes:
+      - django_static:/app/src/static
+      - django_media:/app/src/media
+
 
 volumes:
   django_static:
