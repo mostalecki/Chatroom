@@ -1,15 +1,16 @@
 import os
 
+from decouple import config
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 
-DEBUG = os.environ.get("DJANGO_DEBUG")
+DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(",")
 
-APP_URL = os.environ.get("APP_URL")
+APP_URL = config("APP_URL")
 
 INSTALLED_APPS = [
     # django apps
@@ -61,8 +62,8 @@ WSGI_APPLICATION = "src.wsgi.application"
 
 ASGI_APPLICATION = "src.routing.application"
 
-REDIS_HOST = os.environ.get("REDIS_HOST")
-REDIS_PORT = os.environ.get("REDIS_PORT")
+REDIS_HOST = config("REDIS_HOST")
+REDIS_PORT = config("REDIS_PORT", cast=int)
 
 CHANNEL_LAYERS = {
     "default": {
@@ -74,11 +75,11 @@ CHANNEL_LAYERS = {
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-DB_HOST = os.environ.get("POSTGRES_HOST")
-DB_PORT = os.environ.get("POSTGRES_PORT")
-DB_NAME = os.environ.get("POSTGRES_DB")
-DB_USER = os.environ.get("POSTGRES_USER")
-DB_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
+DB_HOST = config("POSTGRES_HOST")
+DB_PORT = config("POSTGRES_PORT", cast=int)
+DB_NAME = config("POSTGRES_DB")
+DB_USER = config("POSTGRES_USER")
+DB_PASSWORD = config("POSTGRES_PASSWORD")
 
 DATABASES = {
     "default": {
@@ -141,17 +142,17 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "/static"),)
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_ROOT = "/static/"
 
 
 # Email settings
 
-EMAIL_HOST = os.environ.get("EMAIL_HOST")
-EMAIL_PORT = os.environ.get("EMAIL_PORT")
-EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASSWORD")
+EMAIL_HOST = config("EMAIL_HOST")
+EMAIL_PORT = config("EMAIL_PORT", cast=int)
+EMAIL_HOST_USER = config("EMAIL_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_PASSWORD")
 EMAIL_USE_TLS = True
 
 # Celery settings

@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      args:
+        - DJANGO_ENV="production"
+    env_file:
+      - .env.prod
+    command: bash -c "chmod +x scripts/wait_for_db.sh
+      && scripts/wait_for_db.sh
+      && python manage.py makemigrations
+      && python manage.py migrate --noinput
+      && python manage.py collectstatic --noinput
+      && gunicorn src.wsgi:application --bind 0.0.0.0:8000"
+
+  db:
+    env_file:
+      - .env.prod
+
+  celery-normal-priority:
+    env_file:
+      - .env.prod
