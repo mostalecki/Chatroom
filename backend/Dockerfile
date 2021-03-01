@@ -14,6 +14,8 @@ WORKDIR /app
 COPY ./poetry.lock ./pyproject.toml /app/
 
 RUN poetry config virtualenvs.create false
-RUN poetry install
+RUN poetry install \
+    $(if [ "$DJANGO_ENV" = 'production' ]; then echo '--no-dev'; fi) \
+    --no-interaction --no-ansi
 
 COPY . /app
