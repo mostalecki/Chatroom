@@ -1,5 +1,14 @@
 version: "3.8"
 services:
+  frontend:
+    build:
+      target: development
+    ports:
+      - 8080:8080
+    volumes:
+      - /home/node/app/node_modules
+      - ./frontend:/home/node/app
+
   backend:
     build:
       args:
