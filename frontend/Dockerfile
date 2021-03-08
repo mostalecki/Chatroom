@@ -1,6 +1,7 @@
 FROM node:15.10.0-alpine as development
 RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
 WORKDIR /home/node/app
+RUN npm install -g @angular/cli
 COPY ./package.json ./package-lock.json ./
 RUN npm install
 COPY . ./

@@ -10,6 +10,8 @@ DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(",")
 
+CORS_ALLOWED_ORIGINS = ["http://localhost", "http://localhost:8080"]
+
 APP_URL = config("APP_URL")
 
 INSTALLED_APPS = [
@@ -26,6 +28,7 @@ INSTALLED_APPS = [
     "src.apps.chat",
     # third party apps
     "channels",
+    "corsheaders",
     "rest_framework",
     "drf_yasg",
 ]
@@ -33,6 +36,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
