@@ -10,15 +10,16 @@ from src.apps.authentication import views
 urlpatterns = [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh", TokenRefreshView.as_view(), name="token_refresh"),
-    path("user/register", views.UserRegisterAPIView.as_view(), name="user_register"),
+    path("users/register", views.UserRegisterAPIView.as_view(), name="user_register"),
     path(
-        "user/email-confirm",
+        "users/email-confirm",
         views.UserEmailConfirmationView.as_view(),
         name="user_email_confirm",
     ),
     path(
-        "user/resend-activation-email",
+        "users/resend-activation-email",
         views.UserResendEmailConfirmationView.as_view(),
         name="user_email_confirm",
     ),
+    path("users/me", views.UserRetrieveView.as_view(), name="user_retrieve")
 ]
