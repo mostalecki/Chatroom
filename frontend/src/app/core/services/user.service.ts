@@ -27,11 +27,11 @@ export class UserService {
   populate() {
     // If JWT detected, attempt to get & store user's info
     if (this.jwtService.getToken()) {
-      this.apiService.get('/user')
-      .subscribe(
-        data => this.setAuth(data.user),
-        err => this.purgeAuth()
-      );
+      try {
+        this.setAuth({access: this.jwtService.getToken(), refresh: this.jwtService.getRefreshToken()});
+      } catch (err) {
+        this.purgeAuth();
+      }
     } else {
       // Remove any potential remnants of previous auth states
       this.purgeAuth();
@@ -41,11 +41,20 @@ export class UserService {
   setAuth(jwtTokens: JwtTokens) {
     // Save JWT sent from server in localstorage
     this.jwtService.saveToken(jwtTokens.access);
+    this.jwtService.saveRefreshToken(jwtTokens.refresh);
     // Set current user data into observable
-    this.currentUserSubject.next({email: "admin@admin.admin", username: "admin"});
-    // Set isAuthenticated to true
-    console.log(this.getCurrentUser());
-    this.isAuthenticatedSubject.next(true);
+    //this.currentUserSubject.next({email: "admin@admin.admin", username: "admin"});
+    this.setCurrentUser();
+  }
+
+  setCurrentUser(): void {
+    this.apiService.get('/users/me')
+      .subscribe(
+        data => {
+          this.currentUserSubject.next(data);
+          this.isAuthenticatedSubject.next(true);
+        }
+      )
   }
 
   purgeAuth() {
@@ -63,7 +72,7 @@ export class UserService {
       .pipe(map(
       data => {
         this.setAuth(data);
-        return {email: "admin@admin.admin", username: "admin"};
+        return this.getCurrentUser();
       }
     ));
   }
@@ -81,10 +90,6 @@ export class UserService {
       this.currentUserSubject.next(data.user);
       return data.user;
     }));
-  }
-
-  setCurrentUser(): void {
-
   }
 
 }
