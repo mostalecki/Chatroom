@@ -4,6 +4,7 @@ from django.urls import path, include
 urlpatterns = [
     path("", include("src.apps.authentication.urls")),
     path("", include("src.apps.profile.urls")),
+    path("", include("src.apps.ws_authentication.urls")),
 ]
 
 if settings.DEBUG:

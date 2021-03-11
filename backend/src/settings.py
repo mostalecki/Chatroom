@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # local apps
     "src.apps.authentication",
+    "src.apps.ws_authentication",
     "src.apps.profile",
     "src.apps.chat",
     # third party apps

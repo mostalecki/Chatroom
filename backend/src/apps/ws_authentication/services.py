@@ -10,12 +10,15 @@ def create_ticket(user: User, ip_address: str) -> Ticket:
 
 def authenticate(token: str, ip_address) -> User:
     try:
-        ticket = Ticket.objects.get(token=token)
+        ticket = Ticket.objects.select_related("user").get(token=token)
     except Ticket.DoesNotExist:
         raise DenyConnection()
 
     if ticket.is_expired or ticket.ip_address != ip_address:
+        ticket.delete()
         raise DenyConnection()
+
+    ticket.delete()
 
     return ticket.user
 
