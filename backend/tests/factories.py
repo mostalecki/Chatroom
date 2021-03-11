@@ -1,6 +1,10 @@
 import factory
+import faker
 
 from src.apps.authentication.models import User, EmailConfirmationToken
+from src.apps.ws_authentication.models import Ticket
+
+fake = faker.Faker()
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -16,3 +20,11 @@ class EmailConfirmationTokenFactory(factory.django.DjangoModelFactory):
         model = EmailConfirmationToken
 
     user = factory.SubFactory(UserFactory)
+
+
+class TicketFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Ticket
+
+    user = factory.SubFactory(UserFactory)
+    ip_address = fake.ipv4()

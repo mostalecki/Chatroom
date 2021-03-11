@@ -14,4 +14,4 @@ class Ticket(models.Model):
 
     @property
     def is_expired(self) -> bool:
-        return self.created < timezone.now() - timezone.timedelta(minutes=1)
+        return self.created_at < timezone.now() - timezone.timedelta(minutes=1)
