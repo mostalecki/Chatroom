@@ -1,5 +1,7 @@
+import uuid
+from hashlib import sha256
 from django.db import models
-from src.apps.profile.models import Profile
+from src.apps.authentication.models import User
 
 # Create your models here.
 
@@ -37,8 +39,11 @@ class Connection(models.Model):
 class Room(models.Model):
     """ Used to keep track of websocket connections in the same group """
 
-    name = models.CharField(max_length=128, unique=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(User, related_name="rooms", on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=128)
     is_private = models.BooleanField(default=False)
+    password = models.CharField(max_length=128, null=True)
 
     @property
     def num_of_connections(self):
@@ -60,6 +65,10 @@ class Room(models.Model):
         if self.num_of_connections == 0:
             return True
         return False
+
+    def set_password(self, password_str):
+        hasher = sha256()
+        self.password = hasher.hexdigest()
 
     def __str__(self):
         return self.name
