@@ -12,14 +12,9 @@ from src.apps.chat.services import room_create
 
 
 class RoomViewSet(ExceptionHandlerMixin, GenericViewSet, CreateModelMixin, ListModelMixin, RetrieveModelMixin):
-    queryset = Room.objects.all()
+    queryset = Room.objects.filter(is_active=True)
     permission_classes = (AllowAny,)
     serializer_class = RoomSerializer
-
-    def get_serializer_class(self):
-        if self.action == "create":
-            return RoomCreateSerializer
-        return super().get_serializer_class()
 
     def filter_queryset(self, queryset):
         if self.action == "list":
@@ -31,9 +26,11 @@ class RoomViewSet(ExceptionHandlerMixin, GenericViewSet, CreateModelMixin, ListM
         responses={status.HTTP_201_CREATED: RoomSerializer},
     )
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(request.data)
+        serializer = RoomCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        room = room_create(**serializer.validated_data)
+        owner = request.user if request.user.is_authenticated else None
+
+        room = room_create(**serializer.validated_data, owner=owner)
 
         return Response(data=RoomSerializer(room).data, status=status.HTTP_201_CREATED)

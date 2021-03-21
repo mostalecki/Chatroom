@@ -5,7 +5,7 @@ from src.apps.chat.models import Room
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ("name",)
+        fields = ("id", "name",)
 
 
 class RoomCreateSerializer(serializers.ModelSerializer):

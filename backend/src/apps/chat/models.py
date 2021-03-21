@@ -43,6 +43,7 @@ class Room(models.Model):
     owner = models.ForeignKey(User, related_name="rooms", on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=128)
     is_private = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
     password = models.CharField(max_length=128, null=True)
 
     @property
@@ -67,8 +68,8 @@ class Room(models.Model):
         return False
 
     def set_password(self, password_str):
-        hasher = sha256()
-        self.password = hasher.hexdigest()
+        # Room name is used as salt
+        self.password = sha256((password_str + self.name).encode("utf-8'")).hexdigest()
 
     def __str__(self):
         return self.name
