@@ -4,7 +4,8 @@ from random import randint
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
-from .models import Room, Connection
+from src.apps.chat.models import Room, Connection
+from src.utils.helpers import query_string_parser
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -12,7 +13,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """ Create new websocket connection, connect to the group
             and assign id if user is anonymous """
 
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
+        query_params = query_string_parser(self.scope["query_string"])
+
+        self.room_id = self.scope["url_route"]["kwargs"]["room_id"]
         self.room_group_name = "chat_%s" % self.room_name
 
         # Assign user an id if anonymous
