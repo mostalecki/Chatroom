@@ -1,47 +1,54 @@
 import json
-from random import randint
+from typing import Union, Tuple
 
+from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from django.contrib.auth.models import AnonymousUser
 
+from src.apps.authentication.models import User
 from src.apps.chat.models import Room, Connection
 from src.utils.helpers import query_string_parser
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
+        # Create variables that will be assigned upon connection
+        self.room_group_name = None
+        self.room = None
+        self.connection = None
+        self.user = None
+
     async def connect(self):
         """ Create new websocket connection, connect to the group
             and assign id if user is anonymous """
-
         query_params = query_string_parser(self.scope["query_string"])
 
-        self.room_id = self.scope["url_route"]["kwargs"]["room_id"]
-        self.room_group_name = "chat_%s" % self.room_name
+        room_id = self.scope["url_route"]["kwargs"]["room_id"]
+        self.room_group_name = f"chat_{room_id}"
 
-        # Assign user an id if anonymous
-        # id is first 4 digits of md5 hash of channel name
-        user = self.scope["user"]
-        if user.is_anonymous:
-            # id = hashlib.md5()
-            # id.update(self.channel_name.split('.')[1].encode('utf-8'))
-            # self.username = f"{str(user)}#{id.hexdigest()[:4]}"
-            self.username = f"{str(user)}#{randint(1000, 9999)}"
-        else:
-            self.username = user.username
+        self.user = self.scope["user"]
+
+        if self.user.is_anonymous:
+            # Set username to value passed in query param
+            # If it's not present - deny connection
+            if "username" in query_params:
+                self.user.username = query_params["username"]
+            else:
+                raise DenyConnection("Anonymous users must provide username")
 
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        self.room, self.connection = await self.connect_to_room(
-            self.room_name, self.channel_name, self.username, user.is_authenticated
-        )
+        self.room, self.connection = self.connect_to_room(self.user)
 
         # Broadcast join message to group
-        if user.is_anonymous or await self.is_connection_unique:
+        if self.user.is_anonymous or self.is_connection_unique:
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     "type": "join_message",
-                    "username": self.username,
+                    "username": self.user.username,
                     "user_avatar_url": self.connection.user_avatar_url,
                 },
             )
@@ -50,23 +57,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Send back list of profile currently in room
         await self.send(
-            text_data=json.dumps({"type": "user_list", "users": await self.user_list})
+            text_data=json.dumps({"type": "user_list", "users": self.user_list})
         )
 
     async def disconnect(self, close_code):
         """ Disconnects websocket and removes it from the group """
+        #TODO: refactor
 
         # Send leave message
         # Is only sent if leaving user is anonymous, or it is user's last instance in this room
-        user = self.scope["user"]
-        if user.is_anonymous or await self.is_connection_unique:
+        if self.user.is_anonymous or self.is_connection_unique:
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {"type": "leave_message", "username": self.username},
+                {"type": "leave_message", "username": self.user.username},
             )
 
         # Leave room group
-        await self.remove_connection(self.room_name)
+        self.remove_connection()
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
@@ -129,22 +136,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     @database_sync_to_async
-    def connect_to_room(self, room_name, channel_name, username, is_authenticated):
+    def connect_to_room(self, user: Union[User, AnonymousUser]) -> Tuple[Room, Connection]:
         """ Creates/gets new instance of Room object and creates new Connection with reference to it"""
 
-        room, created = Room.objects.get_or_create(name=self.room_name)
+        room, created = Room.objects.get_or_create(name=self.room_group_name)
         connection = Connection(
             room=room,
             channel_name=self.channel_name,
-            username=username,
-            is_user_authenticated=is_authenticated,
+            username=user.username,
+            is_user_authenticated=user.is_authenticated,
         )
         connection.save()
 
         return room, connection
 
     @database_sync_to_async
-    def remove_connection(self, room_name):
+    def remove_connection(self) -> None:
         """ Removes connection to room, removes room if empty """
 
         self.connection.delete()
@@ -153,9 +160,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @property
     @database_sync_to_async
-    def is_connection_unique(self):
-        """ Helper method for accessing Connection.is_unique from async piece of code"""
-
+    def is_connection_unique(self) -> bool:
         return self.connection.is_unique
 
     @property
