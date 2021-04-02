@@ -1,10 +1,12 @@
 import json
 from typing import Union, Tuple
 
+from channels.db import database_sync_to_async
 from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from src.apps.authentication.models import User
 from src.apps.chat.models import Room, Connection
@@ -13,7 +15,7 @@ from src.utils.helpers import query_string_parser
 
 class ChatConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
-        super().__init__(args, kwargs)
+        super().__init__(*args, **kwargs)
         # Create variables that will be assigned upon connection
         self.room_group_name = None
         self.room = None
@@ -26,7 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         query_params = query_string_parser(self.scope["query_string"])
 
         room_id = self.scope["url_route"]["kwargs"]["room_id"]
-        self.room_group_name = f"chat_{room_id}"
+        self.room_group_name = room_id
 
         self.user = self.scope["user"]
 
@@ -40,7 +42,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        self.room, self.connection = self.connect_to_room(self.user)
+        self.room, self.connection = await self.connect_to_room(self.user)
 
         # Broadcast join message to group
         if self.user.is_anonymous or self.is_connection_unique:
@@ -49,20 +51,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "join_message",
                     "username": self.user.username,
+                    "is_authenticated": self.user.is_authenticated,
                     "user_avatar_url": self.connection.user_avatar_url,
                 },
             )
 
         await self.accept()
-
-        # Send back list of profile currently in room
-        await self.send(
-            text_data=json.dumps({"type": "user_list", "users": self.user_list})
-        )
+        # Send back list of users currently in room
+        users = await self.user_list
+        await self.send(text_data=json.dumps({"type": "user_list", "users": users}))
 
     async def disconnect(self, close_code):
         """ Disconnects websocket and removes it from the group """
-        #TODO: refactor
+        # TODO: refactor
 
         # Send leave message
         # Is only sent if leaving user is anonymous, or it is user's last instance in this room
@@ -136,10 +137,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     @database_sync_to_async
-    def connect_to_room(self, user: Union[User, AnonymousUser]) -> Tuple[Room, Connection]:
+    @transaction.atomic
+    def connect_to_room(
+        self, user: Union[User, AnonymousUser]
+    ) -> Tuple[Room, Connection]:
         """ Creates/gets new instance of Room object and creates new Connection with reference to it"""
 
-        room, created = Room.objects.get_or_create(name=self.room_group_name)
+        try:
+            room = Room.objects.get(id=self.room_group_name)
+        except (Room.DoesNotExist, ValidationError) as e:
+            raise DenyConnection("Room not found")
+
         connection = Connection(
             room=room,
             channel_name=self.channel_name,
@@ -147,6 +155,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             is_user_authenticated=user.is_authenticated,
         )
         connection.save()
+
+        if not room.is_active:
+            room.is_active = True
+            room.save()
 
         return room, connection
 
@@ -167,5 +179,4 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def user_list(self):
         """ List of users currently in this room """
-
         return list(self.room.user_list)

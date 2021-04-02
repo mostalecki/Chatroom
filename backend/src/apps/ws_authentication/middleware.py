@@ -29,7 +29,9 @@ class TicketAuthMiddleware(BaseMiddleware):
 
     async def __call__(self, scope, receive, send):
         client_ip = scope["client"][0]
-        scope['user'] = await get_user(query_string=scope["query_string"], client_ip=client_ip)
+        scope["user"] = await get_user(
+            query_string=scope["query_string"], client_ip=client_ip
+        )
 
         return await super().__call__(scope, receive, send)
 

@@ -24,4 +24,3 @@ def ws_authenticate(*, token: str, ip_address) -> User:
     ticket.delete()
 
     return ticket.user
-

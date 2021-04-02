@@ -15,4 +15,6 @@ class TicketCreateView(ExceptionHandlerMixin, CreateAPIView):
         client_ip = get_client_ip(request)[0]
         ticket = create_ticket(user=request.user, ip_address=client_ip)
 
-        return Response(data=self.serializer_class(ticket).data, status=status.HTTP_201_CREATED)
+        return Response(
+            data=self.serializer_class(ticket).data, status=status.HTTP_201_CREATED
+        )

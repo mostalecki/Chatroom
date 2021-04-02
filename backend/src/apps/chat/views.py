@@ -11,7 +11,13 @@ from src.utils.mixins import ExceptionHandlerMixin
 from src.apps.chat.services import room_create
 
 
-class RoomViewSet(ExceptionHandlerMixin, GenericViewSet, CreateModelMixin, ListModelMixin, RetrieveModelMixin):
+class RoomViewSet(
+    ExceptionHandlerMixin,
+    GenericViewSet,
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+):
     queryset = Room.objects.filter(is_active=True)
     permission_classes = (AllowAny,)
     serializer_class = RoomSerializer

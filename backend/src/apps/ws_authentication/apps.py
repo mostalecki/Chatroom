@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class WsAuthenticationConfig(AppConfig):
-    name = 'ws_authentication'
+    name = "ws_authentication"

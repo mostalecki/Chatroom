@@ -85,6 +85,7 @@ class UserResendEmailConfirmationView(ExceptionHandlerMixin, APIView):
 
 class UserRetrieveView(ExceptionHandlerMixin, RetrieveAPIView):
     """Retrieves current user info"""
+
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
