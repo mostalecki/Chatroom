@@ -2,6 +2,7 @@ import uuid
 from hashlib import sha256
 
 from django.db import models
+from django.db.models import QuerySet
 
 from src.apps.authentication.models import User
 from src.apps.chat.querysets import ConnectionQuerySet
@@ -67,10 +68,8 @@ class Room(models.Model):
         return Connection.objects.unique_per_user_in_room(room=self).count()
 
     @property
-    def user_list(self):
-        return Connection.objects.unique_per_user_in_room(room=self).values(
-            "is_user_authenticated", "username", "user_avatar_url"
-        )
+    def users(self) -> QuerySet[Connection]:
+        return Connection.objects.unique_per_user_in_room(room=self)
 
     @property
     def is_empty(self) -> bool:

@@ -7,6 +7,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import CharField
+from django.db.models.functions import Cast
 
 from src.apps.authentication.models import User
 from src.apps.chat.models import Room, Connection
@@ -53,6 +55,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "username": self.user.username,
                     "is_authenticated": self.user.is_authenticated,
                     "user_avatar_url": self.connection.user_avatar_url,
+                    "connection_id": str(self.connection.id),
                 },
             )
 
@@ -63,18 +66,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         """ Disconnects websocket and removes it from the group """
-        # TODO: refactor
-
         # Send leave message
         # Is only sent if leaving user is anonymous, or it is user's last instance in this room
         if self.user.is_anonymous or self.is_connection_unique:
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {"type": "leave_message", "username": self.user.username},
+                {
+                    "type": "leave_message",
+                    "id": str(self.connection.id),
+                    "username": self.user.username,
+                    "is_user_authenticated": self.user.is_authenticated,
+                },
             )
 
         # Leave room group
-        self.remove_connection()
+        await self.remove_connection()
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
@@ -165,7 +171,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def remove_connection(self) -> None:
         """ Removes connection to room, removes room if empty """
-
         self.connection.delete()
         if self.room.is_empty:
             self.room.delete()
@@ -179,4 +184,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def user_list(self):
         """ List of users currently in this room """
-        return list(self.room.user_list)
+        users = self.room.users.annotate(
+            connection_id=Cast("id", output_field=CharField())
+        ).values(
+            "connection_id", "is_user_authenticated", "username", "user_avatar_url"
+        )
+        return list(users)
