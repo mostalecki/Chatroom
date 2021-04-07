@@ -55,12 +55,12 @@ class Room(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(
-        User, related_name="rooms", on_delete=models.SET_NULL, null=True
+        User, related_name="rooms", on_delete=models.SET_NULL, null=True, blank=True
     )
     name = models.CharField(max_length=128)
     is_private = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
-    password = models.CharField(max_length=128, null=True)
+    password = models.CharField(max_length=128, null=True, blank=True)
 
     @property
     def num_of_connections(self) -> int:

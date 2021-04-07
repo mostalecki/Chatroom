@@ -53,7 +53,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "join_message",
                     "username": self.user.username,
-                    "is_authenticated": self.user.is_authenticated,
+                    "is_user_authenticated": self.user.is_authenticated,
                     "user_avatar_url": self.connection.user_avatar_url,
                     "connection_id": str(self.connection.id),
                 },
@@ -61,26 +61,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
         # Send back list of users currently in room
-        users = await self.user_list
+        users = await self.user_list()
         await self.send(text_data=json.dumps({"type": "user_list", "users": users}))
 
     async def disconnect(self, close_code):
         """ Disconnects websocket and removes it from the group """
         # Send leave message
         # Is only sent if leaving user is anonymous, or it is user's last instance in this room
-        if self.user.is_anonymous or self.is_connection_unique:
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "leave_message",
-                    "id": str(self.connection.id),
-                    "username": self.user.username,
-                    "is_user_authenticated": self.user.is_authenticated,
-                },
-            )
+        if self.connection:
+            if self.user.is_anonymous or self.is_connection_unique:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        "type": "leave_message",
+                        "id": str(self.connection.id),
+                        "username": self.user.username,
+                        "is_user_authenticated": self.user.is_authenticated,
+                    },
+                )
 
-        # Leave room group
-        await self.remove_connection()
+            # Leave room group
+            await self.remove_connection()
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
@@ -96,7 +97,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "chat_message",
                 "message": message,
                 "sender_channel": self.channel_name,
-                "user": self.username,
+                "username": self.user.username,
+                "is_user_authenticated": self.user.is_authenticated,
             },
         )
 
@@ -105,7 +107,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         message = event["message"]
         # Send message to WebSocket
-        # type depends on wheter it's from this particular channel (then it's message_confirmation)
+        # type depends on whether it's from this particular channel (then it's message_confirmation)
         # or if it's from other channel (message)
         if self.channel_name == event["sender_channel"]:
             await self.send(
@@ -116,7 +118,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         else:
             await self.send(
                 text_data=json.dumps(
-                    {"type": "message", "user": event["user"], "message": message}
+                    {
+                        "type": "message",
+                        "user": event["user"],
+                        "is_user_authenticated": event["is_user_authenticated"],
+                        "message": message,
+                    }
                 )
             )
 
@@ -125,7 +132,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.send(
             text_data=json.dumps(
-                {"type": "leave_message", "username": event["username"]}
+                {
+                    "type": "leave_message",
+                    "username": event["username"],
+                    "is_user_authenticated": event["is_user_authenticated"],
+                }
             )
         )
 
@@ -137,6 +148,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "join_message",
                     "username": event["username"],
+                    "is_user_authenticated": event["is_user_authenticated"],
                     "user_avatar_url": event["user_avatar_url"],
                 }
             )
@@ -148,7 +160,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self, user: Union[User, AnonymousUser]
     ) -> Tuple[Room, Connection]:
         """ Creates/gets new instance of Room object and creates new Connection with reference to it"""
-
         try:
             room = Room.objects.get(id=self.room_group_name)
         except (Room.DoesNotExist, ValidationError) as e:
@@ -180,7 +191,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def is_connection_unique(self) -> bool:
         return self.connection.is_unique
 
-    @property
     @database_sync_to_async
     def user_list(self):
         """ List of users currently in this room """

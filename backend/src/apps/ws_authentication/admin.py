@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from src.apps.ws_authentication.models import Ticket
+
+admin.site.register(Ticket)
