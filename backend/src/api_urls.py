@@ -5,6 +5,7 @@ urlpatterns = [
     path("", include("src.apps.authentication.urls")),
     path("", include("src.apps.profile.urls")),
     path("", include("src.apps.ws_authentication.urls")),
+    path("", include("src.apps.chat.urls")),
 ]
 
 if settings.DEBUG:

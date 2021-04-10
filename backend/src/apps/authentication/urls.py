@@ -21,5 +21,5 @@ urlpatterns = [
         views.UserResendEmailConfirmationView.as_view(),
         name="user_email_confirm",
     ),
-    path("users/me", views.UserRetrieveView.as_view(), name="user_retrieve")
+    path("users/me", views.UserRetrieveView.as_view(), name="user_retrieve"),
 ]

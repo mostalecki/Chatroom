@@ -10,7 +10,7 @@ from src.apps.authentication.serializers import (
     UserRegisterSerializer,
     TokenSerializer,
     EmailSerializer,
-UserSerializer,
+    UserSerializer,
 )
 from src.apps.authentication.services import (
     user_register,
@@ -85,9 +85,10 @@ class UserResendEmailConfirmationView(ExceptionHandlerMixin, APIView):
 
 class UserRetrieveView(ExceptionHandlerMixin, RetrieveAPIView):
     """Retrieves current user info"""
+
     serializer_class = UserSerializer
 
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user)
 
         return Response(status=status.HTTP_200_OK, data=serializer.data)
