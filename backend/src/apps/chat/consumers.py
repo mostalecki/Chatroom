@@ -16,6 +16,12 @@ from src.utils.helpers import query_string_parser
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    """
+    Close codes:
+    4000 - username not specified
+    4001 - room does not exist
+    4002 - incorrect password
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Create variables that will be assigned upon connection
@@ -40,11 +46,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if "username" in query_params:
                 self.user.username = query_params["username"]
             else:
-                raise DenyConnection("Anonymous users must provide username")
+                await self.close(code=4000)
 
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        self.room, self.connection = await self.connect_to_room(self.user)
+
+        try:
+            self.room, self.connection = await self.connect_to_room(self.user)
+        except DenyConnection:
+            await self.close(code=4001)
+
+        if self.room.password is not None:
+            try:
+                self.validate_room_password(query_params["password"])
+            except (KeyError, DenyConnection):
+                await self.close(code=4002)
 
         # Broadcast join message to group
         if self.user.is_anonymous or self.is_connection_unique:
@@ -85,7 +101,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
-        """ Receive messsage from websocket and forward it to the group """
+        """ Receive message from websocket and forward it to the group """
 
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
@@ -120,7 +136,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 text_data=json.dumps(
                     {
                         "type": "message",
-                        "user": event["user"],
+                        "username": event["username"],
                         "is_user_authenticated": event["is_user_authenticated"],
                         "message": message,
                     }
@@ -162,7 +178,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """ Creates/gets new instance of Room object and creates new Connection with reference to it"""
         try:
             room = Room.objects.get(id=self.room_group_name)
-        except (Room.DoesNotExist, ValidationError) as e:
+        except (Room.DoesNotExist, ValidationError):
             raise DenyConnection("Room not found")
 
         connection = Connection(
@@ -178,6 +194,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room.save()
 
         return room, connection
+
+    def validate_room_password(self, password: str) -> None:
+        if not self.room.validate_password(password):
+            raise DenyConnection("Invalid password")
 
     @database_sync_to_async
     def remove_connection(self) -> None:

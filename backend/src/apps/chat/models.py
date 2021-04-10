@@ -6,6 +6,7 @@ from django.db.models import QuerySet
 
 from src.apps.authentication.models import User
 from src.apps.chat.querysets import ConnectionQuerySet
+from src.apps.profile.models import Profile
 
 
 class Connection(models.Model):
@@ -38,12 +39,12 @@ class Connection(models.Model):
         return True
 
     def save(self, *args, **kwargs):
-        if not self.is_user_authenticated and not self.id:
-            self.user_avatar_url = (
-                User.objects.select_related("profile")
-                .get(username=self.username)
-                .profile.avatar.url
-            )
+        if self.is_user_authenticated and self._state.adding:
+            user = User.objects.select_related("profile").get(username=self.username)
+            try:
+                self.user_avatar_url = user.profile.avatar.url
+            except Profile.DoesNotExist:
+                pass
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -78,6 +79,9 @@ class Room(models.Model):
     def set_password(self, password_str: str) -> None:
         # Room name is used as salt
         self.password = sha256((password_str + self.name).encode("utf-8'")).hexdigest()
+
+    def validate_password(self, password: str) -> bool:
+        return self.password == sha256((password + self.name).encode("utf-8'")).hexdigest()
 
     def __str__(self):
         return self.name
