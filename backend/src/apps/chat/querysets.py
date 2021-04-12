@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.db.models.query import QuerySet
 
 
@@ -22,4 +22,16 @@ class ConnectionQuerySet(QuerySet):
 
         return self.filter(
             anonymous_unique_connections | authenticated_unique_connections
+        )
+
+
+class RoomQuerySet(QuerySet):
+    def with_user_count(self):
+        """
+        Annotates `users_count` value to every room, which is the count of all unique user connections in this room.
+        """
+        return self.annotate(
+            users_count=
+            Count("connections", filter=Q(connections__is_user_authenticated=False)) +
+            Count("connections__username", filter=Q(connections__is_user_authenticated=True), distinct=True)
         )

@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import QuerySet
 
 from src.apps.authentication.models import User
-from src.apps.chat.querysets import ConnectionQuerySet
+from src.apps.chat.querysets import ConnectionQuerySet, RoomQuerySet
 from src.apps.profile.models import Profile
 
 
@@ -13,7 +13,7 @@ class Connection(models.Model):
     """ Stores information about websocket connected to a Room instance """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    room = models.ForeignKey("Room", on_delete=models.CASCADE)
+    room = models.ForeignKey("Room", on_delete=models.CASCADE, related_name="connections")
     channel_name = models.CharField(max_length=255)
     is_user_authenticated = models.BooleanField(default=False)
     username = models.CharField(max_length=255)
@@ -63,6 +63,8 @@ class Room(models.Model):
     is_active = models.BooleanField(default=False)
     password = models.CharField(max_length=128, null=True, blank=True)
 
+    objects = RoomQuerySet.as_manager()
+
     @property
     def num_of_connections(self) -> int:
         """ Returns amount of unique (with respect to user) connections in this room """
@@ -75,6 +77,10 @@ class Room(models.Model):
     @property
     def is_empty(self) -> bool:
         return self.num_of_connections == 0
+
+    @property
+    def is_password_protected(self) -> bool:
+        return self.password is not None
 
     def set_password(self, password_str: str) -> None:
         # Room name is used as salt
