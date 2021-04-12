@@ -10,7 +10,7 @@ import { HttpParams } from '@angular/common/http';
 export class RoomService {
   constructor(private apiService: ApiService) {}
 
-  list(config: RoomListConfig): Observable<Room[]> {
+  list(config: RoomListConfig): Observable<{ results: Room[]; count: number }> {
     // Convert any filters over to Angular's URLSearchParams
     const params = {};
 

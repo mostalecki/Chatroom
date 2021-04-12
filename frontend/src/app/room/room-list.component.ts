@@ -44,13 +44,11 @@ export class RoomListComponent {
     this.roomService.list(this.query).subscribe((data) => {
       //throw new Error(data);
       this.loading = false;
-      this.results = data;
-
-      var roomsCount = 10;
+      this.results = data.results;
 
       // Used from http://www.jstips.co/en/create-range-0...n-easily-using-one-line/
       this.totalPages = Array.from(
-        new Array(Math.ceil(roomsCount / this.limit)),
+        new Array(Math.ceil(data.count / this.limit)),
         (val, index) => index + 1
       );
     });
