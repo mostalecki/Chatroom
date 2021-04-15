@@ -1,36 +1,35 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { UserService } from '../core';
+import { UserService, RoomListConfig } from '../core';
 
 @Component({
   selector: 'app-home-page',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
 })
 export class HomeComponent implements OnInit {
-  constructor(
-    private router: Router,
-    private userService: UserService
-  ) {}
+  constructor(private router: Router, private userService: UserService) {}
 
   isAuthenticated: boolean;
+  roomConfig: RoomListConfig = {
+    type: 'all',
+    filters: {},
+  };
   tags: Array<string> = [];
   tagsLoaded = false;
 
   ngOnInit() {
-    this.userService.isAuthenticated.subscribe(
-      (authenticated) => {
-        this.isAuthenticated = authenticated;
+    this.userService.isAuthenticated.subscribe((authenticated) => {
+      this.isAuthenticated = authenticated;
 
-        // set the article list accordingly
-        if (authenticated) {
-          this.setListTo('feed');
-        } else {
-          this.setListTo('all');
-        }
+      // set the article list accordingly
+      if (authenticated) {
+        this.setListTo('feed');
+      } else {
+        this.setListTo('all');
       }
-    );
+    });
   }
 
   setListTo(type: string = '', filters: Object = {}) {

@@ -1,3 +1,4 @@
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import AllowAny
@@ -18,9 +19,10 @@ class RoomViewSet(
     ListModelMixin,
     RetrieveModelMixin,
 ):
-    queryset = Room.objects.filter(is_active=True)
+    queryset = Room.objects.select_related("owner").with_user_count().filter(is_active=True)
     permission_classes = (AllowAny,)
     serializer_class = RoomSerializer
+    pagination_class = LimitOffsetPagination
 
     def filter_queryset(self, queryset):
         if self.action == "list":
