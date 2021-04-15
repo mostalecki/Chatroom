@@ -1,0 +1,31 @@
+<div class="article-meta">
+  <ng-template [ngIf]="room.owner"
+    ><a [routerLink]="['/profile', room.owner.username]"> </a>
+
+    <div *ngIf="room.owner.avatarUrl; else elseBlock">
+      <img [src]="room.owner.avatarUrl" />
+    </div>
+    <ng-template #elseBlock
+      ><img src="assets/img/account_circle_black_24dp.svg"
+    /></ng-template>
+
+    <a class="author" [routerLink]="['/profile', room.owner.username]">
+      {{ room.owner.username }} </a
+    ><br
+  /></ng-template>
+  <div class="info">
+    <!--<a class="author" [routerLink]="['/profile', room.owner.username]">
+      {{ room.owner.username }}
+    </a>-->
+    <span
+      >{{ room.usersCount }}
+      <div *ngIf="room.usersCount == 1; else elseBlock">user</div>
+      <ng-template #elseBlock>users</ng-template></span
+    >
+    <ng-template [ngIf]="room.isPasswordProtected"
+      ><img src="assets/img/lock_black_24dp.svg"
+    /></ng-template>
+  </div>
+
+  <ng-content></ng-content>
+</div>

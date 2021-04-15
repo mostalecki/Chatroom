@@ -1,7 +1,8 @@
-<div class="room-preview">
+<div class="article-preview">
+  <app-room-meta [room]="room"> </app-room-meta>
+
   <a [routerLink]="['/room', room.id]" class="preview-link">
     <h1>{{ room.name }}</h1>
-    <span>{{ room.usersCount }} users in this room.</span>
     <!--<ul class="tag-list">
       <li
         class="tag-default tag-pill tag-outline"

@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
+import { RoomMetaComponent } from './room-meta.component';
 
 @NgModule({
   imports: [
@@ -15,7 +16,7 @@ import { RouterModule } from '@angular/router';
     HttpClientModule,
     RouterModule,
   ],
-  declarations: [RoomListComponent, RoomPreviewComponent],
-  exports: [RoomListComponent, RoomPreviewComponent],
+  declarations: [RoomListComponent, RoomPreviewComponent, RoomMetaComponent],
+  exports: [RoomListComponent, RoomPreviewComponent, RoomMetaComponent],
 })
 export class RoomModule {}
