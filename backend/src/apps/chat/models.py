@@ -17,7 +17,7 @@ class Connection(models.Model):
     channel_name = models.CharField(max_length=255)
     is_user_authenticated = models.BooleanField(default=False)
     username = models.CharField(max_length=255)
-    user_avatar_url = models.CharField(max_length=255, null=True)
+    user_avatar_url = models.CharField(max_length=255, null=True, blank=True)
 
     objects = ConnectionQuerySet.as_manager()
 

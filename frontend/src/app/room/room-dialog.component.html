@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>Connect to room</h2>
+
+<mat-dialog-content [formGroup]="form">
+  <ng-template [ngIf]="!username">
+    <mat-form-field>
+      <input
+        matInput
+        placeholder="Choose your username"
+        formControlName="username"
+      />
+    </mat-form-field>
+  </ng-template>
+
+  <ng-template [ngIf]="isPasswordProtected">
+    <mat-form-field>
+      <input
+        matInput
+        type="password"
+        placeholder="Password"
+        formControlName="password"
+      />
+    </mat-form-field>
+  </ng-template>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button class="mat-raised-button" (click)="close()">Close</button>
+
+  <button class="mat-raised-button mat-primary" (click)="save()">
+    Connect
+  </button>
+</mat-dialog-actions>

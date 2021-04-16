@@ -25,8 +25,6 @@ export class RoomService {
   }
 
   get(id: string): Observable<Room> {
-    return this.apiService
-      .get('/rooms/' + id)
-      .pipe(map((data: { room: Room }) => data.room));
+    return this.apiService.get('/rooms/' + id).pipe(map((room: Room) => room));
   }
 }
