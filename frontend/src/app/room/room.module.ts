@@ -15,6 +15,8 @@ import { RoomComponent } from './room.component';
 import { RoomResolver } from './room-resolver.service';
 import { RoomService } from 'app/core';
 import { RoomDialogComponent } from './room-dialog.component';
+import { WebsocketTicketService } from 'app/core/services/websocket-ticket.service';
+import { ChatModule } from 'app/chat/chat.module';
 
 @NgModule({
   imports: [
@@ -27,6 +29,7 @@ import { RoomDialogComponent } from './room-dialog.component';
     MatDialogModule,
     MatInputModule,
     MatSelectModule,
+    ChatModule,
   ],
   declarations: [
     RoomComponent,
@@ -36,7 +39,7 @@ import { RoomDialogComponent } from './room-dialog.component';
     RoomDialogComponent,
   ],
   exports: [RoomListComponent, RoomPreviewComponent, RoomMetaComponent],
-  providers: [RoomResolver, RoomService],
+  providers: [RoomResolver, RoomService, WebsocketTicketService],
   entryComponents: [RoomDialogComponent],
 })
 export class RoomModule {}

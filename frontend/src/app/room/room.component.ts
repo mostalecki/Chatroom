@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Room, RoomService, Comment, User, UserService } from '../core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { RoomDialogComponent } from './room-dialog.component';
+import { WebsocketTicketService } from 'app/core/services/websocket-ticket.service';
 
 @Component({
   selector: 'app-room-page',
@@ -20,6 +21,7 @@ export class RoomComponent implements OnInit {
   commentFormErrors = {};
   isSubmitting = false;
   isDeleting = false;
+  canConnect = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -27,6 +29,7 @@ export class RoomComponent implements OnInit {
     //private commentsService: CommentsService,
     private router: Router,
     private userService: UserService,
+    private ticketService: WebsocketTicketService,
     private dialog: MatDialog
   ) {}
 
@@ -61,60 +64,6 @@ export class RoomComponent implements OnInit {
 
     const dialogRef = this.dialog.open(RoomDialogComponent, dialogConfig);
 
-    dialogRef.afterClosed().subscribe((data) => console.log(data));
+    dialogRef.afterClosed().subscribe((data) => (this.canConnect = true));
   }
-
-  /*onToggleFavorite(favorited: boolean) {
-    this.article.favorited = favorited;
-
-    if (favorited) {
-      this.article.favoritesCount++;
-    } else {
-      this.article.favoritesCount--;
-    }
-  }*/
-
-  /*onToggleFollowing(following: boolean) {
-    this.article.author.following = following;
-  }
-
-  deleteArticle() {
-    this.isDeleting = true;
-
-    this.articlesService.destroy(this.article.slug).subscribe((success) => {
-      this.router.navigateByUrl('/');
-    });
-  }
-
-  populateComments() {
-    this.commentsService
-      .getAll(this.article.slug)
-      .subscribe((comments) => (this.comments = comments));
-  }
-
-  addComment() {
-    this.isSubmitting = true;
-    this.commentFormErrors = {};
-
-    const commentBody = this.commentControl.value;
-    this.commentsService.add(this.article.slug, commentBody).subscribe(
-      (comment) => {
-        this.comments.unshift(comment);
-        this.commentControl.reset('');
-        this.isSubmitting = false;
-      },
-      (errors) => {
-        this.isSubmitting = false;
-        this.commentFormErrors = errors;
-      }
-    );
-  }
-
-  onDeleteComment(comment) {
-    this.commentsService
-      .destroy(comment.id, this.article.slug)
-      .subscribe((success) => {
-        this.comments = this.comments.filter((item) => item !== comment);
-      });
-  }*/
 }
