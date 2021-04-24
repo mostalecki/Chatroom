@@ -1,4 +1,5 @@
 import { Component, NgZone, OnDestroy, OnInit, Input } from '@angular/core';
+import { environment } from 'environments/environment';
 
 @Component({
   selector: 'app-chat',
@@ -13,10 +14,17 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   constructor(private zone: NgZone) {}
   @Input() roomId: string;
+  @Input() username: string;
+  @Input() token: string;
+  @Input() password: string;
 
   ngOnInit(): void {
     this.messages = [];
-    this.socket = new WebSocket(`ws://localhost:8000/ws/chat/${this.roomId}`);
+    this.socket = new WebSocket(
+      `${environment.api_url}/chat/${this.roomId}?${
+        this.token ? 'token=' + this.token : 'username=' + this.username
+      }${this.password ? '&password=' + this.password : ''}`
+    );
     this.socket.onmessage = (event) => {
       console.log('onmessage:' + event);
       this.zone.run(() => {

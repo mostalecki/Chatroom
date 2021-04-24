@@ -37,7 +37,13 @@
 
   <div class="container page">
     <div>
-      <app-chat [roomId]="room.id" *ngIf="canConnect === true"></app-chat>
+      <app-chat
+        [roomId]="room.id"
+        [username]="username"
+        [token]="token"
+        [password]="password"
+        *ngIf="canConnect === true"
+      ></app-chat>
     </div>
     <!--<div class="row article-content">
         <div class="col-md-12">
