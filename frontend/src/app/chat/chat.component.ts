@@ -21,7 +21,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.messages = [];
     this.socket = new WebSocket(
-      `${environment.api_url}/chat/${this.roomId}?${
+      `${environment.websocket_url}/chat/${this.roomId}?${
         this.token ? 'token=' + this.token : 'username=' + this.username
       }${this.password ? '&password=' + this.password : ''}`
     );
