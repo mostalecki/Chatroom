@@ -48,7 +48,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.users = [...this.users, messageObj.user];
         this.messages = [
           ...this.messages,
-          `${messageObj.user.username} has left.`,
+          `${messageObj.user.username} has joined.`,
         ];
         break;
 

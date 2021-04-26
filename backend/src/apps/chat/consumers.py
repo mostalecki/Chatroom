@@ -52,7 +52,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
         try:
-            self.room, self.connection = await self.connect_to_room(self.user)
+            self.room = await self.get_room()
         except DenyConnection:
             await self.close(code=4001)
 
@@ -61,6 +61,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.validate_room_password(query_params["password"])
             except (KeyError, DenyConnection):
                 await self.close(code=4002)
+
+
+        await self.accept()
+
+        # Send back list of users currently in room
+        users = await self.user_list()
+        await self.send(text_data=json.dumps({"type": "user_list", "users": users}))
+        
+        self.connection = await self.connect_to_room(self.user, self.room)
 
         # Broadcast join message to group
         if self.user.is_anonymous or self.is_connection_unique:
@@ -75,11 +84,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 },
             )
 
-        await self.accept()
-        # Send back list of users currently in room
-        users = await self.user_list()
-        await self.send(text_data=json.dumps({"type": "user_list", "users": users}))
-
     async def disconnect(self, close_code):
         """ Disconnects websocket and removes it from the group """
         # Send leave message
@@ -90,7 +94,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     self.room_group_name,
                     {
                         "type": "leave_message",
-                        "id": str(self.connection.id),
+                        "connection_id": str(self.connection.id),
                         "username": self.user.username,
                         "is_user_authenticated": self.user.is_authenticated,
                     },
@@ -115,6 +119,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "sender_channel": self.channel_name,
                 "username": self.user.username,
                 "is_user_authenticated": self.user.is_authenticated,
+                "connection_id": str(self.connection.id)
             },
         )
 
@@ -136,8 +141,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 text_data=json.dumps(
                     {
                         "type": "message",
-                        "username": event["username"],
-                        "is_user_authenticated": event["is_user_authenticated"],
+                        "user": {
+                            "username": event["username"],
+                            "is_user_authenticated": event["is_user_authenticated"],
+                            "connection_id": event["connection_id"]
+                        },
                         "message": message,
                     }
                 )
@@ -150,8 +158,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data=json.dumps(
                 {
                     "type": "leave_message",
-                    "username": event["username"],
-                    "is_user_authenticated": event["is_user_authenticated"],
+                    "user": {
+                        "username": event["username"],
+                        "is_user_authenticated": event["is_user_authenticated"],
+                        "connection_id": event["connection_id"]
+                        }
                 }
             )
         )
@@ -163,37 +174,44 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data=json.dumps(
                 {
                     "type": "join_message",
-                    "username": event["username"],
-                    "is_user_authenticated": event["is_user_authenticated"],
-                    "user_avatar_url": event["user_avatar_url"],
+                    "user": {
+                        "username": event["username"],
+                        "is_user_authenticated": event["is_user_authenticated"],
+                        "user_avatar_url": event["user_avatar_url"],
+                        "connection_id": event["connection_id"]
+                    }
                 }
             )
         )
 
     @database_sync_to_async
-    @transaction.atomic
-    def connect_to_room(
-        self, user: Union[User, AnonymousUser]
-    ) -> Tuple[Room, Connection]:
-        """ Creates/gets new instance of Room object and creates new Connection with reference to it"""
+    def get_room(self) -> Room:
+        """Creates/gets Room instance and activates it if not active"""
         try:
             room = Room.objects.get(id=self.room_group_name)
         except (Room.DoesNotExist, ValidationError):
             raise DenyConnection("Room not found")
 
-        connection = Connection(
+        if not room.is_active:
+            room.is_active = True
+            room.save()
+
+        return room
+
+    @database_sync_to_async
+    def connect_to_room(
+        self, user: Union[User, AnonymousUser], room: Room
+    ) -> Room:
+        """Ceates new Connection with reference to room"""
+
+        connection = Connection.objects.create(
             room=room,
             channel_name=self.channel_name,
             username=user.username,
             is_user_authenticated=user.is_authenticated,
         )
-        connection.save()
 
-        if not room.is_active:
-            room.is_active = True
-            room.save()
-
-        return room, connection
+        return connection
 
     def validate_room_password(self, password: str) -> None:
         if not self.room.validate_password(password):
