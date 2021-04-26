@@ -1,41 +1,29 @@
-<div fxFill fxLayout="column bottom">
-  <div fxFlex>
-    <p *ngFor="let m of messages">
-      {{ m }}
-    </p>
-  </div>
-  <div>
-    <form
-      fxLayout="row baseline"
-      #messageForm="ngForm"
-      (ngSubmit)="sendMessage()"
-    >
-      <mat-form-field fxFlex>
-        <input
-          name="message"
-          fxFill
-          matInput
-          #messageCtrl="ngModel"
-          [(ngModel)]="message"
-          required
-        />
-        <mat-error
-          fxLayoutAlign="start"
-          *ngIf="messageCtrl.hasError('required')"
-        >
-          Message body can not be empty.
-        </mat-error>
-      </mat-form-field>
-      <div>
-        <button
-          mat-button
-          mat-icon-button
-          type="submit"
-          [disabled]="messageForm.invalid || messageForm.pending"
-        >
-          <mat-icon>send</mat-icon>
-        </button>
+<mat-grid-list class="siema" cols="10" rowHeight="400px">
+  <mat-grid-tile class="siema" colspan="8">
+    <div fxFill fxLayout="column bottom">
+      <div fxFlex>
+        <cdk-virtual-scroll-viewport itemSize="50" class="example-viewport">
+          <p *cdkVirtualFor="let m of messages" class="example-item">
+            {{ m }}
+          </p>
+        </cdk-virtual-scroll-viewport>
+
+        <!--<p *ngFor="let m of messages">
+          {{ m }}
+        </p>-->
       </div>
-    </form>
-  </div>
-</div>
+      <input
+        [(ngModel)]="message"
+        (keyup)="$event.keyCode == 13 && sendMessage()"
+      />
+      <button (click)="sendMessage()">Send Message</button>
+    </div>
+  </mat-grid-tile>
+  <mat-grid-tile colspan="2">
+    <div fxFlex fxLayout="column" fxLayoutAlign="end">
+      <p class="userTile" *ngFor="let u of users">
+        {{ u.username }}
+      </p>
+    </div>
+  </mat-grid-tile>
+</mat-grid-list>

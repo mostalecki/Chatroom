@@ -1,3 +1,30 @@
 body {
   font-size: 14px;
 }
+
+.userTile {
+  text-align: right;
+}
+
+.example-viewport {
+  height: 95%;
+  width: 100%;
+  border: 1px solid black;
+}
+
+.siema {
+  height: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.siema2 {
+  height: 300vh;
+  min-height: 100vh;
+}
+
+/*.example-item {
+  height: 50px;
+}*/
