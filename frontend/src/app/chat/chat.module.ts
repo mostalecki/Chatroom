@@ -6,9 +6,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatGridListModule } from '@angular/material/grid-list';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ChatComponent } from './chat.component';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @NgModule({
   declarations: [ChatComponent],
@@ -22,6 +24,8 @@ import { ChatComponent } from './chat.component';
     MatButtonModule,
     MatIconModule,
     MatInputModule,
+    MatGridListModule,
+    ScrollingModule,
   ],
   exports: [ChatComponent],
 })

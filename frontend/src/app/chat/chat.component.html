@@ -1,41 +1,53 @@
-<div fxFill fxLayout="column bottom">
-  <div fxFlex>
-    <p *ngFor="let m of messages">
-      {{ m }}
-    </p>
-  </div>
-  <div>
-    <form
-      fxLayout="row baseline"
-      #messageForm="ngForm"
-      (ngSubmit)="sendMessage()"
-    >
-      <mat-form-field fxFlex>
-        <input
-          name="message"
-          fxFill
-          matInput
-          #messageCtrl="ngModel"
-          [(ngModel)]="message"
-          required
-        />
-        <mat-error
-          fxLayoutAlign="start"
-          *ngIf="messageCtrl.hasError('required')"
-        >
-          Message body can not be empty.
-        </mat-error>
-      </mat-form-field>
-      <div>
-        <button
-          mat-button
-          mat-icon-button
-          type="submit"
-          [disabled]="messageForm.invalid || messageForm.pending"
-        >
-          <mat-icon>send</mat-icon>
-        </button>
+<mat-grid-list class="siema" cols="10" rowHeight="400px">
+  <mat-grid-tile class="siema" colspan="8">
+    <div fxFill fxLayout="column bottom">
+      <div fxFlex>
+        <cdk-virtual-scroll-viewport itemSize="50" class="example-viewport">
+          <ul>
+            <ng-container
+              *cdkVirtualFor="let m of messages"
+              class="example-item"
+            >
+              <ng-container [ngSwitch]="m.type">
+                <li *ngSwitchCase="'join_message'" class="join-leave-message">
+                  {{ m.message }}
+                </li>
+                <li *ngSwitchCase="'leave_message'" class="join-leave-message">
+                  {{ m.message }}
+                </li>
+                <li *ngSwitchCase="'message'" class="message">
+                  {{ m.user.username }}: {{ m.message }}
+                </li>
+                <li
+                  *ngSwitchCase="'message_confirmation'"
+                  class="message-confirmation"
+                >
+                  {{ m.message }}
+                </li>
+                <p *ngSwitchDefault>{{ m.type }} {{ m.message }}</p>
+              </ng-container>
+            </ng-container>
+          </ul>
+        </cdk-virtual-scroll-viewport>
       </div>
-    </form>
-  </div>
-</div>
+      <input
+        [(ngModel)]="message"
+        (keyup)="$event.keyCode == 13 && sendMessage()"
+      />
+      <button (click)="sendMessage()">Send Message</button>
+    </div>
+  </mat-grid-tile>
+  <mat-grid-tile class="elo" colspan="2">
+    <div class="elo">
+      <h1>Users:</h1>
+      <div fxLayout="column" fxLayoutAlign="start center">
+        <span class="userTile" *ngFor="let u of users">
+          <p *ngIf="u.is_user_authenticated; else elseBlock">
+            <b>{{ u.username }}</b>
+          </p>
+          <ng-template #elseBlock>{{ u.username }}</ng-template>
+        </span>
+      </div>
+    </div>
+  </mat-grid-tile>
+</mat-grid-list>
