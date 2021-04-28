@@ -3,14 +3,32 @@
     <div fxFill fxLayout="column bottom">
       <div fxFlex>
         <cdk-virtual-scroll-viewport itemSize="50" class="example-viewport">
-          <p *cdkVirtualFor="let m of messages" class="example-item">
-            {{ m }}
-          </p>
+          <ul>
+            <ng-container
+              *cdkVirtualFor="let m of messages"
+              class="example-item"
+            >
+              <ng-container [ngSwitch]="m.type">
+                <li *ngSwitchCase="'join_message'" class="join-leave-message">
+                  {{ m.message }}
+                </li>
+                <li *ngSwitchCase="'leave_message'" class="join-leave-message">
+                  {{ m.message }}
+                </li>
+                <li *ngSwitchCase="'message'" class="message elo">
+                  {{ m.user.username }}: {{ m.message }}
+                </li>
+                <li
+                  *ngSwitchCase="'message_confirmation'"
+                  class="message-confirmation elo"
+                >
+                  {{ m.message }}
+                </li>
+                <p *ngSwitchDefault>{{ m.type }} {{ m.message }}</p>
+              </ng-container>
+            </ng-container>
+          </ul>
         </cdk-virtual-scroll-viewport>
-
-        <!--<p *ngFor="let m of messages">
-          {{ m }}
-        </p>-->
       </div>
       <input
         [(ngModel)]="message"

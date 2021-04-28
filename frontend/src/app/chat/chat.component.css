@@ -25,6 +25,43 @@ body {
   min-height: 100vh;
 }
 
-/*.example-item {
-  height: 50px;
-}*/
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  display: block;
+  clear: both;
+  padding: 10px;
+  border-radius: 30px;
+  margin-bottom: 2px;
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.join-leave-message {
+  padding: 10px;
+  display: inline-block;
+  text-align: center;
+}
+
+.message {
+  background: #eee;
+  float: left;
+}
+
+.message-confirmation {
+  float: right;
+  background: #0084ff;
+  color: #fff;
+}
+
+.message + .message-confirmation {
+  border-bottom-right-radius: 5px;
+}
+
+.message-confirmation + .message-confirmation {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}

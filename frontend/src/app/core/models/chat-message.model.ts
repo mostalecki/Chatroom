@@ -4,4 +4,5 @@ export interface ChatMessage {
   type: string;
   message: string;
   user: ChatUser;
+  users: ChatUser[];
 }

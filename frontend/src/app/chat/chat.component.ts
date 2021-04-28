@@ -1,6 +1,7 @@
 import { Component, NgZone, OnDestroy, OnInit, Input } from '@angular/core';
 import { environment } from 'environments/environment';
 import { ChatUser } from 'app/core/models/chat-user.model';
+import { ChatMessage } from 'app/core/models/chat-message.model';
 
 @Component({
   selector: 'app-chat',
@@ -10,7 +11,7 @@ import { ChatUser } from 'app/core/models/chat-user.model';
 export class ChatComponent implements OnInit, OnDestroy {
   title = 'client';
   message = '';
-  messages: any[];
+  messages: ChatMessage[];
   users: ChatUser[];
   socket: WebSocket;
 
@@ -36,9 +37,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   addMessage(msg: any) {
-    //this.messages = [...this.messages, msg];
-    //console.log("messages::" + this.messages);
-    let messageObj = JSON.parse(msg);
+    let messageObj: ChatMessage = JSON.parse(msg);
     switch (messageObj.type) {
       case 'user_list':
         this.users = messageObj.users;
@@ -48,7 +47,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.users = [...this.users, messageObj.user];
         this.messages = [
           ...this.messages,
-          `${messageObj.user.username} has joined.`,
+          {
+            type: 'join_message',
+            message: `${messageObj.user.username} has joined.`,
+            user: null,
+            users: null,
+          },
         ];
         break;
 
@@ -57,12 +61,20 @@ export class ChatComponent implements OnInit, OnDestroy {
         let userIndex = user.is_user_authenticated
           ? this.users.findIndex((u) => u.username === user.username)
           : this.users.findIndex((u) => u.connection_id === user.connection_id);
-        this.messages = [...this.messages, `${user.username} has left.`];
+        this.messages = [
+          ...this.messages,
+          {
+            type: 'leave_message',
+            message: `${user.username} has left.`,
+            user: null,
+            users: null,
+          },
+        ];
         delete this.users[userIndex];
         break;
 
       default:
-        this.messages = [...this.messages, messageObj.message];
+        this.messages = [...this.messages, messageObj];
         break;
     }
   }
@@ -72,7 +84,6 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   sendMessage() {
-    console.log('sending message:' + this.message);
     this.socket.send(JSON.stringify({ message: this.message }));
     this.message = null;
   }
