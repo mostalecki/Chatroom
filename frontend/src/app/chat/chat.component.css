@@ -65,3 +65,9 @@ ul li {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
 }
+
+.elo {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
