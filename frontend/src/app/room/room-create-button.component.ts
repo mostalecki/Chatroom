@@ -29,6 +29,8 @@ export class RoomCreateButtonComponent {
   }
 
   createRoom(data: any) {
-    console.log(data);
+    this.roomService.create(data).subscribe((data) => {
+      this.router.navigateByUrl(`/room/${data.id}`);
+    });
   }
 }

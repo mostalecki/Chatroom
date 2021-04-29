@@ -27,4 +27,10 @@ export class RoomService {
   get(id: string): Observable<Room> {
     return this.apiService.get('/rooms/' + id).pipe(map((room: Room) => room));
   }
+
+  create(data): Observable<Room> {
+    return this.apiService
+      .post('/rooms/', { ...data })
+      .pipe(map((room: Room) => room));
+  }
 }

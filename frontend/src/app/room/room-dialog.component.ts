@@ -1,7 +1,7 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Component, OnInit, Inject } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Room } from 'app/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'room-dialog',
@@ -16,7 +16,8 @@ export class RoomDialogComponent implements OnInit {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private fb: FormBuilder,
-    private dialogRef: MatDialogRef<RoomDialogComponent>
+    private dialogRef: MatDialogRef<RoomDialogComponent>,
+    private router: Router
   ) {
     this.username = data.username;
     this.isPasswordProtected = data.isPasswordProtected;
@@ -34,5 +35,6 @@ export class RoomDialogComponent implements OnInit {
 
   close() {
     this.dialogRef.close();
+    this.router.navigateByUrl('/');
   }
 }
