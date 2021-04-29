@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>Create room</h2>
+
+<mat-dialog-content [formGroup]="form">
+  <mat-form-field>
+    <input matInput placeholder="Room name" formControlName="name" />
+  </mat-form-field>
+
+  <label class="center-align" for="isPrivate">Private: </label>
+  <input id="isPrivate" type="checkbox" formControlName="isPrivate" />
+
+  <mat-form-field>
+    <input
+      matInput
+      type="password"
+      placeholder="Password (optional)"
+      formControlName="password"
+    />
+  </mat-form-field>
+
+  <mat-dialog-actions>
+    <button class="mat-raised-button" (click)="close()">Close</button>
+
+    <button class="mat-raised-button mat-primary" (click)="save()">
+      Create
+    </button>
+  </mat-dialog-actions>
+</mat-dialog-content>

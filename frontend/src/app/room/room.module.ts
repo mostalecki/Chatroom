@@ -18,6 +18,7 @@ import { RoomService } from 'app/core';
 import { RoomDialogComponent } from './room-dialog.component';
 import { WebsocketTicketService } from 'app/core/services/websocket-ticket.service';
 import { ChatModule } from 'app/chat/chat.module';
+import { RoomCreateDialogComponent } from './room-create-dialog.component';
 
 @NgModule({
   imports: [
@@ -39,6 +40,7 @@ import { ChatModule } from 'app/chat/chat.module';
     RoomMetaComponent,
     RoomDialogComponent,
     RoomCreateButtonComponent,
+    RoomCreateDialogComponent,
   ],
   exports: [
     RoomListComponent,
