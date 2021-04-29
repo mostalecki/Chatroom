@@ -10,6 +10,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { RoomMetaComponent } from './room-meta.component';
+import { RoomCreateButtonComponent } from './room-create-button.component';
 import { RoomRoutingModule } from './room-routing.module';
 import { RoomComponent } from './room.component';
 import { RoomResolver } from './room-resolver.service';
@@ -17,6 +18,7 @@ import { RoomService } from 'app/core';
 import { RoomDialogComponent } from './room-dialog.component';
 import { WebsocketTicketService } from 'app/core/services/websocket-ticket.service';
 import { ChatModule } from 'app/chat/chat.module';
+import { RoomCreateDialogComponent } from './room-create-dialog.component';
 
 @NgModule({
   imports: [
@@ -37,8 +39,15 @@ import { ChatModule } from 'app/chat/chat.module';
     RoomPreviewComponent,
     RoomMetaComponent,
     RoomDialogComponent,
+    RoomCreateButtonComponent,
+    RoomCreateDialogComponent,
   ],
-  exports: [RoomListComponent, RoomPreviewComponent, RoomMetaComponent],
+  exports: [
+    RoomListComponent,
+    RoomPreviewComponent,
+    RoomMetaComponent,
+    RoomCreateButtonComponent,
+  ],
   providers: [RoomResolver, RoomService, WebsocketTicketService],
   entryComponents: [RoomDialogComponent],
 })

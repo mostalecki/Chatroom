@@ -16,16 +16,16 @@ class RoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = (
-            "id",
-            "name",
-            "owner",
-            "users_count",
-            "is_password_protected"
-        )
+        fields = ("id", "name", "owner", "users_count", "is_password_protected")
 
 
-class RoomCreateSerializer(serializers.ModelSerializer):
+class RoomCreateOutputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ("id", "name", "is_private", "is_password_protected")
+
+
+class RoomCreateInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ("name", "is_private", "password")
