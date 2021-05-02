@@ -27,7 +27,7 @@ services:
 
   backend-ws:
     ports:
-      - 8000:8008
+      - 8008:8008
     env_file:
       - .env.dev
     command: python manage.py runserver 0.0.0.0:8008
