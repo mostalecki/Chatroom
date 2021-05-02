@@ -20,7 +20,7 @@ services:
   backend-ws:
     env_file:
       - .env.prod
-    command: daphne -p 8008 src.asgi:application
+    command: daphne src.asgi:application --bind 0.0.0.0 --port 8008
 
   db:
     env_file:

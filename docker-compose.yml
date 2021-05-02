@@ -48,6 +48,7 @@ services:
     - 80:80
     depends_on:
       - backend-api
+      - frontend
     volumes:
       - django_static:/app/src/static
       - django_media:/app/src/media
