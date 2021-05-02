@@ -4,7 +4,7 @@ services:
     build:
       target: production
 
-  backend:
+  backend-api:
     build:
       args:
         - DJANGO_ENV="production"
@@ -16,6 +16,11 @@ services:
       && python manage.py migrate --noinput
       && python manage.py collectstatic --noinput
       && gunicorn src.wsgi:application --bind 0.0.0.0:8000"
+
+  backend-ws:
+    env_file:
+      - .env.prod
+    command: daphne src.asgi:application --bind 0.0.0.0 --port 8008
 
   db:
     env_file:

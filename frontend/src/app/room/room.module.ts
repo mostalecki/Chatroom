@@ -49,6 +49,6 @@ import { RoomCreateDialogComponent } from './room-create-dialog.component';
     RoomCreateButtonComponent,
   ],
   providers: [RoomResolver, RoomService, WebsocketTicketService],
-  entryComponents: [RoomDialogComponent],
+  entryComponents: [RoomDialogComponent, RoomCreateDialogComponent],
 })
 export class RoomModule {}
