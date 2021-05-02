@@ -18,8 +18,6 @@ services:
       && gunicorn src.wsgi:application --bind 0.0.0.0:8000"
 
   backend-ws:
-    ports:
-      - 8000:8008
     env_file:
       - .env.prod
     command: daphne -p 8008 src.asgi:application
