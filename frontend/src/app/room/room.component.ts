@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { Room, RoomService, Comment, User, UserService } from '../core';
+import { Room, RoomService, User, UserService } from '../core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { RoomDialogComponent } from './room-dialog.component';
 import { WebsocketTicketService } from 'app/core/services/websocket-ticket.service';
@@ -17,9 +17,6 @@ export class RoomComponent implements OnInit {
   room: Room;
   currentUser: User;
   canModify: boolean;
-  comments: Comment[];
-  commentControl = new FormControl();
-  commentFormErrors = {};
   isSubmitting = false;
   isDeleting = false;
   canConnect = false;
@@ -30,7 +27,6 @@ export class RoomComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private roomService: RoomService,
-    //private commentsService: CommentsService,
     private router: Router,
     private userService: UserService,
     private ticketService: WebsocketTicketService,
@@ -38,12 +34,9 @@ export class RoomComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Retreive the prefetched article
+    // Retreive room
     this.route.data.subscribe((data: { room: Room }) => {
       this.room = data.room;
-
-      // Load the comments on this article
-      //this.populateComments();
     });
 
     // Load the current user's data
@@ -82,7 +75,6 @@ export class RoomComponent implements OnInit {
   connect() {
     if (this.currentUser.username) {
       this.ticketService.get().subscribe((ticket: Ticket) => {
-        //throw new Error(data);
         this.token = ticket.token;
         this.canConnect = true;
       });
