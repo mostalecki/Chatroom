@@ -27,6 +27,6 @@ List of all `make` commands:
 - `test-backend` - run backend test suite
 - `shell` - enter backend's Django shell
 
-Of course you can also start the project by using docker-compose commands that sit behinf make commands e.g.
+Of course you can also start the project by using docker-compose commands that sit behind `make` commands - e.g.
 
 `docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build`
