@@ -27,7 +27,7 @@
     "@angular/platform-browser-dynamic": "11.2.4",
     "@angular/router": "11.2.4",
     "core-js": "^3.9.1",
-    "marked": "^2.0.1",
+    "marked": "^4.0.10",
     "ngx-socket-io": "^4.0.0",
     "rxjs": "^6.6.6",
     "tslib": "^2.1.0",
